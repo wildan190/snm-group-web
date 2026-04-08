@@ -1173,12 +1173,27 @@ async function closeExpiredPendingOrders() {
   );
 }
 
-async function startServer() {
-  try {
-    await connectDb();
+let bootPromise = null;
+let schedulerStarted = false;
+
+export async function initServer(options = {}) {
+  const enableScheduler = Boolean(options.enableScheduler);
+  if (!bootPromise) {
+    bootPromise = connectDb();
+  }
+  await bootPromise;
+
+  if (enableScheduler && !schedulerStarted) {
+    schedulerStarted = true;
     setInterval(() => {
       closeExpiredPendingOrders().catch((err) => console.error("Failed running order expiry scheduler:", err));
     }, 5 * 60 * 1000);
+  }
+}
+
+async function startServer() {
+  try {
+    await initServer({ enableScheduler: true });
     app.listen(PORT, () => {
       console.log(`CMS backend running on http://localhost:${PORT}`);
     });
@@ -1188,4 +1203,8 @@ async function startServer() {
   }
 }
 
-startServer();
+if (process.env.VERCEL !== "1") {
+  startServer();
+}
+
+export { app };
