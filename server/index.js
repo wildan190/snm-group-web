@@ -8,6 +8,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import crypto from "crypto";
+import os from "os";
 
 dotenv.config();
 
@@ -19,8 +20,16 @@ const JWT_SECRET = process.env.JWT_SECRET || "snm-group-secret";
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "Admin";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "Manchester@2025";
 
-const uploadDir = path.resolve("./server/uploads");
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+const workspaceUploadDir = path.resolve("./server/uploads");
+const tempUploadDir = path.join(os.tmpdir(), "snm-group-uploads");
+let uploadDir = workspaceUploadDir;
+
+try {
+  if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+} catch {
+  uploadDir = tempUploadDir;
+  if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 const sanitizeFileName = (originalName) => {
   const baseName = path.basename(originalName);
