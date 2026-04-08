@@ -1,6 +1,10 @@
 <template>
   <div id="app">
-    <header v-if="!isCms" class="site-header" :class="{ sticky: isScrolled }">
+    <header
+      v-if="!isCms"
+      class="site-header"
+      :class="{ sticky: isScrolled || isShopRoute, 'force-solid': isShopRoute }"
+    >
       <div class="header-container">
         <router-link to="/" class="brand">
           <img v-if="logoUrl" :src="logoUrl" :alt="site.companyName" class="site-logo" />
@@ -126,6 +130,9 @@ const isMobileNavOpen = ref(false);
 const whatsappFloat = ref<null | { phoneNumber: string; message?: string; label?: string }>(null);
 
 const isCms = computed(() => route.path.startsWith("/cms"));
+const isShopRoute = computed(
+  () => route.path.startsWith("/shop") || route.path.startsWith("/products"),
+);
 
 const filteredNavbar = computed(() => {
   return (site.value.navbar || []).filter(

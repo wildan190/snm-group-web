@@ -162,7 +162,7 @@
               <div class="product-info">
                 <h4>{{ product.name }}</h4>
                 <p class="product-price">Rp {{ product.price?.toLocaleString('id-ID') }}</p>
-                <router-link :to="'/products/' + product._id" class="btn btn-primary" style="font-size: 13px; padding: 10px 20px;">
+                <router-link :to="'/shop/product/' + product._id" class="btn btn-primary" style="font-size: 13px; padding: 10px 20px;">
                   Lihat Detail
                 </router-link>
               </div>

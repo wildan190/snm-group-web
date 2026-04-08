@@ -16,6 +16,7 @@ export function usePages() {
     ogImageUrl: "",
     schemaType: "none",
     schemaCustomJson: "",
+    pageStatus: "draft",
     blocks: [],
   });
   const newBlockType = ref<
@@ -39,6 +40,7 @@ export function usePages() {
       ogImageUrl: "",
       schemaType: "none",
       schemaCustomJson: "",
+      pageStatus: "draft",
       isHomepage: false,
       blocks: [buildBlock("hero")],
     };
@@ -46,6 +48,7 @@ export function usePages() {
 
   async function selectPage(page: PageData): Promise<void> {
     current.value = JSON.parse(JSON.stringify(page));
+    if (!current.value.pageStatus) current.value.pageStatus = "draft";
   }
 
   async function setHomepage(page: PageData): Promise<void> {
@@ -95,6 +98,7 @@ export function usePages() {
         ogImageUrl: "",
         schemaType: "none",
         schemaCustomJson: "",
+        pageStatus: "draft",
         blocks: [],
       };
   }

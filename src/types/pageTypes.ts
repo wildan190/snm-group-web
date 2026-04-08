@@ -122,6 +122,7 @@ export interface PageData {
   ogImageUrl?: string;
   schemaType?: "none" | "organization" | "website" | "product" | "aboutus";
   schemaCustomJson?: string;
+  pageStatus?: "draft" | "published";
   isHomepage?: boolean;
   blocks: PageBlock[];
 }

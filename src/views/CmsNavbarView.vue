@@ -24,8 +24,25 @@
           </button>
         </div>
         <div class="nav-items-grid">
-          <div v-for="(item, index) in localSite.navbar" :key="index" class="nav-item-card card">
+          <div
+            v-for="(item, index) in localSite.navbar"
+            :key="index"
+            class="nav-item-card card"
+            :class="{ 'drag-over': dragOverType === 'navbar' && dragOverIndex === index }"
+            @dragover.prevent
+            @dragenter.prevent="onDragEnter('navbar', index)"
+            @drop="onDrop('navbar', index)"
+          >
             <div class="nav-item-form">
+              <button
+                class="btn-icon-sm drag-handle"
+                title="Geser untuk reorder"
+                draggable="true"
+                @dragstart="onDragStart('navbar', index)"
+                @dragend="onDragEnd"
+              >
+                <Icon icon="lucide:grip-vertical" />
+              </button>
               <div class="form-field">
                 <label>Label Menu</label>
                 <input v-model="item.label" placeholder="Contoh: Beranda, Tentang Kami" />
@@ -40,12 +57,21 @@
                   <option v-for="page in pages" :key="page._id" :value="'/page/' + page.slug">
                     {{ page.title }} (/page/{{ page.slug }})
                   </option>
-                  <option value="/products">Katalog Produk</option>
+                  <option value="/shop">Ecommerce Shop</option>
+                  <option value="/shop/track">Tracking Order</option>
                 </select>
               </div>
               <button class="btn-icon-sm danger" @click="removeNavItem('navbar', index)">
                 <Icon icon="lucide:trash-2" />
               </button>
+              <div class="reorder-buttons">
+                <button class="btn-icon-sm" :disabled="index === 0" @click="moveNavItem('navbar', index, 'up')">
+                  <Icon icon="lucide:arrow-up" />
+                </button>
+                <button class="btn-icon-sm" :disabled="index === localSite.navbar.length - 1" @click="moveNavItem('navbar', index, 'down')">
+                  <Icon icon="lucide:arrow-down" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -63,8 +89,25 @@
           </button>
         </div>
         <div class="nav-items-grid">
-          <div v-for="(item, index) in localSite.footer" :key="index" class="nav-item-card card">
+          <div
+            v-for="(item, index) in localSite.footer"
+            :key="index"
+            class="nav-item-card card"
+            :class="{ 'drag-over': dragOverType === 'footer' && dragOverIndex === index }"
+            @dragover.prevent
+            @dragenter.prevent="onDragEnter('footer', index)"
+            @drop="onDrop('footer', index)"
+          >
             <div class="nav-item-form">
+              <button
+                class="btn-icon-sm drag-handle"
+                title="Geser untuk reorder"
+                draggable="true"
+                @dragstart="onDragStart('footer', index)"
+                @dragend="onDragEnd"
+              >
+                <Icon icon="lucide:grip-vertical" />
+              </button>
               <div class="form-field">
                 <label>Label Footer</label>
                 <input v-model="item.label" placeholder="Contoh: Disclaimer, Karir" />
@@ -79,12 +122,21 @@
                   <option v-for="page in pages" :key="page._id" :value="'/page/' + page.slug">
                     {{ page.title }}
                   </option>
-                  <option value="/products">Produk</option>
+                  <option value="/shop">Ecommerce Shop</option>
+                  <option value="/shop/track">Tracking Order</option>
                 </select>
               </div>
               <button class="btn-icon-sm danger" @click="removeNavItem('footer', index)">
                 <Icon icon="lucide:trash-2" />
               </button>
+              <div class="reorder-buttons">
+                <button class="btn-icon-sm" :disabled="index === 0" @click="moveNavItem('footer', index, 'up')">
+                  <Icon icon="lucide:arrow-up" />
+                </button>
+                <button class="btn-icon-sm" :disabled="index === localSite.footer.length - 1" @click="moveNavItem('footer', index, 'down')">
+                  <Icon icon="lucide:arrow-down" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -105,6 +157,10 @@ const siteStore = useSiteStore();
 const { site } = storeToRefs(siteStore);
 const pages = ref<any[]>([]);
 const pageLinks = computed(() => pages.value.map((p) => `/page/${p.slug}`));
+const dragType = ref<"navbar" | "footer" | null>(null);
+const dragIndex = ref<number | null>(null);
+const dragOverType = ref<"navbar" | "footer" | null>(null);
+const dragOverIndex = ref<number | null>(null);
 
 // Use a local reactive copy for editing to avoid direct store binding while typing
 const localSite = reactive({
@@ -113,13 +169,19 @@ const localSite = reactive({
 });
 
 function isKnownLink(link: string) {
-  return link === "/" || link === "/products" || pageLinks.value.includes(link);
+  return link === "/" || link === "/shop" || link === "/shop/track" || pageLinks.value.includes(link);
 }
 
 async function loadData() {
   await siteStore.loadSite();
-  localSite.navbar = JSON.parse(JSON.stringify(site.value.navbar || []));
-  localSite.footer = JSON.parse(JSON.stringify(site.value.footer || []));
+  localSite.navbar = JSON.parse(JSON.stringify(site.value.navbar || [])).map((item: any) => ({
+    ...item,
+    link: item?.link === "/products" ? "/shop" : item?.link,
+  }));
+  localSite.footer = JSON.parse(JSON.stringify(site.value.footer || [])).map((item: any) => ({
+    ...item,
+    link: item?.link === "/products" ? "/shop" : item?.link,
+  }));
 
   const res = await api.get("/pages");
   pages.value = res.data;
@@ -131,6 +193,47 @@ function addNavItem(type: 'navbar' | 'footer') {
 
 function removeNavItem(type: 'navbar' | 'footer', index: number) {
   localSite[type].splice(index, 1);
+}
+
+function moveNavItem(type: 'navbar' | 'footer', index: number, direction: 'up' | 'down') {
+  const list = localSite[type];
+  const targetIndex = direction === 'up' ? index - 1 : index + 1;
+  if (targetIndex < 0 || targetIndex >= list.length) return;
+  const temp = list[index];
+  list[index] = list[targetIndex];
+  list[targetIndex] = temp;
+}
+
+function onDragStart(type: "navbar" | "footer", index: number) {
+  dragType.value = type;
+  dragIndex.value = index;
+}
+
+function onDragEnd() {
+  dragType.value = null;
+  dragIndex.value = null;
+  dragOverType.value = null;
+  dragOverIndex.value = null;
+}
+
+function onDragEnter(type: "navbar" | "footer", index: number) {
+  dragOverType.value = type;
+  dragOverIndex.value = index;
+}
+
+function onDrop(type: "navbar" | "footer", targetIndex: number) {
+  if (dragType.value !== type) return onDragEnd();
+  if (dragIndex.value === null) return onDragEnd();
+
+  const list = localSite[type];
+  const from = dragIndex.value;
+  const to = targetIndex;
+  if (from === to) return onDragEnd();
+
+  const [moved] = list.splice(from, 1);
+  if (!moved) return onDragEnd();
+  list.splice(to, 0, moved);
+  onDragEnd();
 }
 
 async function saveNavigation() {
@@ -190,10 +293,30 @@ onMounted(() => {
   padding: 1.25rem;
 }
 
+.nav-item-card.drag-over {
+  border: 1px dashed var(--primary);
+  background: #f8f5ff;
+}
+
 .nav-item-form {
   display: flex;
   align-items: flex-end;
   gap: 1rem;
+}
+
+.drag-handle {
+  cursor: grab;
+  color: #64748b;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.reorder-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 
 .nav-item-form .form-field {
@@ -226,6 +349,9 @@ onMounted(() => {
   .nav-item-form {
     flex-direction: column;
     align-items: stretch;
+  }
+  .reorder-buttons {
+    flex-direction: row;
   }
 }
 </style>

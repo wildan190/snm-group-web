@@ -41,6 +41,14 @@
             <Icon icon="lucide:image" class="item-icon" />
             <span>Aset Media</span>
           </router-link>
+          <router-link to="/cms/ecommerce" class="nav-item" @click="closeMenuOnMobile">
+            <Icon icon="lucide:store" class="item-icon" />
+            <span>Ecommerce</span>
+          </router-link>
+          <router-link to="/cms/ecommerce/audit-logs" class="nav-sub-item" @click="closeMenuOnMobile">
+            <Icon icon="lucide:history" class="item-icon" />
+            <span>Audit Log Ecommerce</span>
+          </router-link>
         </div>
 
         <div class="nav-group">

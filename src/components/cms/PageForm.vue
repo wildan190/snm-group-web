@@ -40,6 +40,14 @@
             </div>
           </div>
         </div>
+        <div class="form-field mt-4">
+          <label>Status Publish</label>
+          <select v-model="current.pageStatus">
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+          </select>
+          <p class="text-xs text-slate-500 mt-1">Draft tidak akan tampil di landing/public sampai di-publish.</p>
+        </div>
         <div class="form-field mt-6">
           <label class="flex items-center gap-3 cursor-pointer p-4 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors">
             <input 
