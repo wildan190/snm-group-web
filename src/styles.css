@@ -94,6 +94,7 @@
 }
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 body {
   margin: 0;
@@ -101,6 +102,9 @@ body {
   background: #ffffff;
   color: #727272;
   font-family: 'DM Sans', system-ui, sans-serif;
+  overflow-x: hidden;
+}
+#app {
   overflow-x: hidden;
 }
 h1, h2, h3, h4, h5, h6 {
@@ -498,11 +502,9 @@ select:focus {
   box-shadow: 0 32px 80px rgba(15, 23, 42, 0.16);
 }
 @media (max-width: 768px) {
-  .site-header,
-  .site-footer,
-  main {
-    padding-left: 0.75rem;
-    padding-right: 0.75rem;
+  .container {
+    width: 100%;
+    max-width: 100%;
   }
   .split-columns.two,
   .split-columns.three {

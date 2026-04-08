@@ -8,7 +8,14 @@ export function usePages() {
   const current = ref<PageData>({
     title: "",
     slug: "",
+    seoTitle: "",
     seoDescription: "",
+    canonicalUrl: "",
+    ogTitle: "",
+    ogDescription: "",
+    ogImageUrl: "",
+    schemaType: "none",
+    schemaCustomJson: "",
     blocks: [],
   });
   const newBlockType = ref<
@@ -24,7 +31,14 @@ export function usePages() {
     current.value = {
       title: "",
       slug: "",
+      seoTitle: "",
       seoDescription: "",
+      canonicalUrl: "",
+      ogTitle: "",
+      ogDescription: "",
+      ogImageUrl: "",
+      schemaType: "none",
+      schemaCustomJson: "",
       isHomepage: false,
       blocks: [buildBlock("hero")],
     };
@@ -70,7 +84,19 @@ export function usePages() {
     await api.delete(`/pages/${page._id}`);
     await loadPages();
     if (current.value._id === page._id)
-      current.value = { title: "", slug: "", seoDescription: "", blocks: [] };
+      current.value = {
+        title: "",
+        slug: "",
+        seoTitle: "",
+        seoDescription: "",
+        canonicalUrl: "",
+        ogTitle: "",
+        ogDescription: "",
+        ogImageUrl: "",
+        schemaType: "none",
+        schemaCustomJson: "",
+        blocks: [],
+      };
   }
 
   function addBlock(): void {

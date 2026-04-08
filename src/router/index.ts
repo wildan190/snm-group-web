@@ -6,16 +6,21 @@ import ProductsView from '@/views/ProductsView.vue'
 import CmsLoginView from '@/views/CmsLoginView.vue'
 import CmsDashboardView from '@/views/CmsDashboardView.vue'
 import CmsLayout from '@/components/CmsLayout.vue'
+import CmsAuthLayout from '@/components/CmsAuthLayout.vue'
 
 const routes = [
   { path: '/', name: 'home', component: HomeView },
   { path: '/products', name: 'products', component: ProductsView },
   { path: '/page/:slug', name: 'page', component: PageView },
   {
+    path: '/cms/login',
+    component: CmsAuthLayout,
+    children: [{ path: '', name: 'cms-login', component: CmsLoginView }],
+  },
+  {
     path: '/cms',
     component: CmsLayout,
     children: [
-      { path: 'login', name: 'cms-login', component: CmsLoginView },
       { path: 'dashboard', name: 'cms-dashboard', component: CmsDashboardView, meta: { auth: true } },
       { path: 'pages', name: 'cms-pages', component: () => import('@/views/CmsPagesView.vue'), meta: { auth: true } },
       { path: 'products', name: 'cms-products', component: () => import('@/views/CmsProductsView.vue'), meta: { auth: true } },

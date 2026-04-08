@@ -53,6 +53,8 @@
 import { ref, onMounted } from "vue";
 import { Icon } from "@iconify/vue";
 import api from "@/utils/api";
+import { useSiteStore } from "@/stores/site";
+import { applySeo } from "@/composables/useSeo";
 
 type Product = {
   _id?: string;
@@ -65,12 +67,34 @@ type Product = {
 
 const products = ref<Product[]>([]);
 const isLoading = ref(true);
+const siteStore = useSiteStore();
 
 async function loadProducts(): Promise<void> {
   isLoading.value = true;
   try {
     const res = await api.get("/products");
     products.value = res.data;
+    const canonical = new URL("/products", window.location.origin).toString();
+    applySeo({
+      title: `Produk & Layanan | ${siteStore.site.companyName || "SNM Group"}`,
+      description:
+        "Katalog produk dan layanan SNM Group untuk kebutuhan bisnis Anda.",
+      canonical,
+      ogTitle: `Produk & Layanan | ${siteStore.site.companyName || "SNM Group"}`,
+      ogDescription:
+        "Katalog produk dan layanan SNM Group untuk kebutuhan bisnis Anda.",
+      schema: {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        name: "Produk SNM Group",
+        itemListElement: res.data.map((item: Product, index: number) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          name: item.name,
+          description: item.description,
+        })),
+      },
+    });
   } catch (err) {
     console.warn("Unable to load products", err);
   } finally {
@@ -78,7 +102,10 @@ async function loadProducts(): Promise<void> {
   }
 }
 
-onMounted(loadProducts);
+onMounted(async () => {
+  await siteStore.loadSite();
+  await loadProducts();
+});
 </script>
 
 <style scoped>

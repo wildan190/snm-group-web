@@ -10,9 +10,12 @@ import { useRoute, useRouter } from "vue-router";
 import { Icon } from "@iconify/vue";
 import api from "@/utils/api";
 import CmsContentRenderer from "@/components/cms/CmsContentRenderer.vue";
+import { useSiteStore } from "@/stores/site";
+import { applySeoFromPage } from "@/composables/useSeo";
 
 const route = useRoute();
 const router = useRouter();
+const siteStore = useSiteStore();
 const page = ref<any | null>(null);
 const isLoading = ref(true);
 
@@ -25,6 +28,7 @@ async function loadPage(): Promise<void> {
       return;
     }
     page.value = res.data;
+    applySeoFromPage(page.value, siteStore.site, route.fullPath);
   } catch (err) {
     console.warn("Unable to load page", err);
     page.value = null;
@@ -35,6 +39,7 @@ async function loadPage(): Promise<void> {
 }
 
 onMounted(async () => {
+  await siteStore.loadSite();
   await loadPage();
 });
 

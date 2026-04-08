@@ -15,8 +15,13 @@
           <h3 class="section-title">Daftar User</h3>
           <div class="grid">
             <div v-for="user in users" :key="user._id" class="card item-card">
-              <strong>{{ user.username }}</strong>
-              <p class="item-meta">{{ user.role }}</p>
+              <div>
+                <strong>{{ user.username }}</strong>
+                <p class="item-meta">{{ user.role }}</p>
+              </div>
+              <button class="btn-icon-sm danger" title="Hapus User" @click="deleteUser(user)">
+                <Icon icon="lucide:trash-2" width="16" />
+              </button>
             </div>
           </div>
         </aside>
@@ -51,6 +56,7 @@
 import { ref, onMounted } from "vue";
 import Swal from "sweetalert2";
 import api from "@/utils/api";
+import { Icon } from "@iconify/vue";
 
 type User = { _id: string; username: string; role: string };
 const users = ref<User[]>([]);
@@ -81,5 +87,43 @@ async function createUser(): Promise<void> {
   });
 }
 
+async function deleteUser(user: User): Promise<void> {
+  const result = await Swal.fire({
+    icon: "warning",
+    title: "Hapus user ini?",
+    text: `User ${user.username} akan dihapus permanen.`,
+    showCancelButton: true,
+    confirmButtonText: "Ya, Hapus",
+    cancelButtonText: "Batal",
+    confirmButtonColor: "#ef4444",
+  });
+  if (!result.isConfirmed) return;
+
+  try {
+    await api.delete(`/auth/users/${user._id}`);
+    await loadUsers();
+    await Swal.fire({
+      icon: "success",
+      title: "User berhasil dihapus",
+      timer: 1400,
+      showConfirmButton: false,
+    });
+  } catch (err: any) {
+    await Swal.fire({
+      icon: "error",
+      title: "Gagal menghapus user",
+      text: err?.response?.data?.error || "Terjadi kesalahan saat menghapus user.",
+    });
+  }
+}
+
 onMounted(loadUsers);
 </script>
+
+<style scoped>
+.item-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+</style>

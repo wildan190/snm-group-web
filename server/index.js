@@ -40,6 +40,23 @@ app.use(cors());
 app.use(express.json());
 app.use("/uploads", express.static(uploadDir));
 
+function resolveBaseUrl(req) {
+  const explicit = process.env.SITE_URL?.trim();
+  if (explicit) return explicit.replace(/\/+$/, "");
+  const protocol = req.headers["x-forwarded-proto"] || req.protocol || "http";
+  const host = req.headers["x-forwarded-host"] || req.get("host");
+  return `${protocol}://${host}`.replace(/\/+$/, "");
+}
+
+function xmlEscape(value = "") {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
 const client = new MongoClient(MONGO_URI);
 let db;
 
@@ -87,6 +104,10 @@ async function ensureSeedData() {
       address: "Jl. Modern No. 10, Jakarta, Indonesia",
       email: "info@snmgroup.co.id",
       phone: "+62 21 1234 5678",
+      themePrimary: "#7E57FF",
+      themePrimaryHover: "#6a3fff",
+      themeDark: "#081828",
+      themeBackground: "#ffffff",
       socials: [
         { name: "LinkedIn", url: "https://www.linkedin.com/company/snm-group" },
         { name: "Instagram", url: "https://instagram.com/snmgroup" },
@@ -151,6 +172,32 @@ app.post("/api/auth/users", authMiddleware, async (req, res) => {
     createdAt: new Date(),
   });
   res.json({ id: inserted.insertedId, username, role: role || "editor" });
+});
+
+app.delete("/api/auth/users/:id", authMiddleware, async (req, res) => {
+  const id = req.params.id;
+  if (!ObjectId.isValid(id)) {
+    return res.status(400).json({ error: "ID user tidak valid" });
+  }
+
+  if (req.user?.id === id) {
+    return res.status(400).json({ error: "Tidak dapat menghapus akun yang sedang login" });
+  }
+
+  const target = await db.collection("users").findOne({ _id: new ObjectId(id) });
+  if (!target) {
+    return res.status(404).json({ error: "User tidak ditemukan" });
+  }
+
+  if (target.role === "admin") {
+    const adminCount = await db.collection("users").countDocuments({ role: "admin" });
+    if (adminCount <= 1) {
+      return res.status(400).json({ error: "Minimal harus ada satu admin" });
+    }
+  }
+
+  await db.collection("users").deleteOne({ _id: new ObjectId(id) });
+  res.json({ success: true });
 });
 
 app.get("/api/site", async (req, res) => {
@@ -275,18 +322,66 @@ app.get("/api/assets", async (req, res) => {
   res.json(files);
 });
 
+app.get("/api/asset-folders", authMiddleware, async (req, res) => {
+  const folders = await db
+    .collection("assetFolders")
+    .find()
+    .sort({ createdAt: -1 })
+    .toArray();
+  res.json(folders);
+});
+
+app.post("/api/asset-folders", authMiddleware, async (req, res) => {
+  const rawName = String(req.body?.name || "").trim();
+  if (!rawName) {
+    return res.status(400).json({ error: "Nama folder wajib diisi" });
+  }
+
+  const normalizedName = rawName.replace(/\s+/g, " ");
+  const existing = await db.collection("assetFolders").findOne({
+    nameLower: normalizedName.toLowerCase(),
+  });
+  if (existing) {
+    return res.status(409).json({ error: "Nama folder sudah digunakan" });
+  }
+
+  const folder = {
+    name: normalizedName,
+    nameLower: normalizedName.toLowerCase(),
+    createdAt: new Date(),
+  };
+  const inserted = await db.collection("assetFolders").insertOne(folder);
+  res.json({ ...folder, _id: inserted.insertedId });
+});
+
 app.post(
   "/api/assets",
   authMiddleware,
   upload.single("file"),
   async (req, res) => {
     if (!req.file) return res.status(400).json({ error: "File tidak dikirim" });
+    const folderId =
+      typeof req.body?.folderId === "string" ? req.body.folderId.trim() : "";
+
+    if (folderId && !ObjectId.isValid(folderId)) {
+      return res.status(400).json({ error: "Folder tidak valid" });
+    }
+    if (folderId) {
+      const folderExists = await db
+        .collection("assetFolders")
+        .findOne({ _id: new ObjectId(folderId) });
+      if (!folderExists) {
+        return res.status(404).json({ error: "Folder tidak ditemukan" });
+      }
+    }
+
     const fileData = {
       originalName: req.file.originalname,
       filename: req.file.filename,
       url: `/uploads/${req.file.filename}`,
       mimetype: req.file.mimetype,
       size: req.file.size,
+      folderId: folderId || null,
       uploadedAt: new Date(),
     };
     await db.collection("assets").insertOne(fileData);
@@ -311,6 +406,75 @@ app.delete("/api/assets/:id", authMiddleware, async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: "Gagal menghapus aset" });
+  }
+});
+
+app.get("/robots.txt", (req, res) => {
+  const baseUrl = resolveBaseUrl(req);
+  res.type("text/plain");
+  res.send(
+    [
+      "User-agent: *",
+      "Allow: /",
+      "Disallow: /cms",
+      "Disallow: /api",
+      "",
+      `Sitemap: ${baseUrl}/sitemap.xml`,
+      "",
+    ].join("\n"),
+  );
+});
+
+app.get("/sitemap.xml", async (req, res) => {
+  try {
+    const baseUrl = resolveBaseUrl(req);
+    const pages = await db
+      .collection("pages")
+      .find({}, { projection: { slug: 1, updatedAt: 1, isHomepage: 1 } })
+      .toArray();
+
+    const urls = [];
+    urls.push({
+      loc: `${baseUrl}/`,
+      lastmod: new Date().toISOString(),
+      changefreq: "weekly",
+      priority: "1.0",
+    });
+    urls.push({
+      loc: `${baseUrl}/products`,
+      lastmod: new Date().toISOString(),
+      changefreq: "weekly",
+      priority: "0.8",
+    });
+
+    for (const page of pages) {
+      const lastmod = page.updatedAt ? new Date(page.updatedAt).toISOString() : new Date().toISOString();
+      if (!page.isHomepage && page.slug) {
+        urls.push({
+          loc: `${baseUrl}/page/${page.slug}`,
+          lastmod,
+          changefreq: "weekly",
+          priority: "0.7",
+        });
+      }
+    }
+
+    const body = [
+      '<?xml version="1.0" encoding="UTF-8"?>',
+      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+      ...urls.map(
+        (item) =>
+          `<url><loc>${xmlEscape(item.loc)}</loc><lastmod>${xmlEscape(
+            item.lastmod,
+          )}</lastmod><changefreq>${item.changefreq}</changefreq><priority>${item.priority}</priority></url>`,
+      ),
+      "</urlset>",
+    ].join("");
+
+    res.type("application/xml");
+    res.send(body);
+  } catch (err) {
+    res.status(500).json({ error: "Gagal membuat sitemap" });
   }
 });
 

@@ -11,6 +11,7 @@ import { useSiteStore } from "@/stores/site";
 import { Icon } from "@iconify/vue";
 import api from "@/utils/api";
 import CmsContentRenderer from "@/components/cms/CmsContentRenderer.vue";
+import { applySeoFromPage } from "@/composables/useSeo";
 
 const router = useRouter();
 const siteStore = useSiteStore();
@@ -29,6 +30,7 @@ async function loadHomePage(): Promise<void> {
       return;
     }
     homePage.value = found;
+    applySeoFromPage(found, siteStore.site, "/");
   } catch (err) {
     console.warn("Unable to load homepage", err);
     router.push("/cms/login");

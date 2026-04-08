@@ -114,7 +114,14 @@ export interface PageData {
   _id?: string;
   title: string;
   slug: string;
+  seoTitle?: string;
   seoDescription: string;
+  canonicalUrl?: string;
+  ogTitle?: string;
+  ogDescription?: string;
+  ogImageUrl?: string;
+  schemaType?: "none" | "organization" | "website" | "product" | "aboutus";
+  schemaCustomJson?: string;
   isHomepage?: boolean;
   blocks: PageBlock[];
 }

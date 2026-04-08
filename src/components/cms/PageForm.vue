@@ -61,6 +61,65 @@
             placeholder="Deskripsi untuk hasil pencarian Google..."
           ></textarea>
         </div>
+        <div class="grid grid-2 gap-6 mt-6">
+          <div class="form-field">
+            <label>SEO Title (Opsional)</label>
+            <input
+              v-model="current.seoTitle"
+              placeholder="Judul SEO khusus (default: Judul Halaman)"
+            />
+          </div>
+          <div class="form-field">
+            <label>Canonical URL (Opsional)</label>
+            <input
+              v-model="current.canonicalUrl"
+              placeholder="https://domainanda.com/slug-halaman"
+            />
+          </div>
+        </div>
+        <div class="grid grid-2 gap-6 mt-6">
+          <div class="form-field">
+            <label>OG Title (Meta Share)</label>
+            <input
+              v-model="current.ogTitle"
+              placeholder="Judul saat dibagikan ke sosial media"
+            />
+          </div>
+          <div class="form-field">
+            <label>OG Description (Meta Share)</label>
+            <input
+              v-model="current.ogDescription"
+              placeholder="Deskripsi saat dibagikan ke sosial media"
+            />
+          </div>
+        </div>
+        <div class="form-field mt-6">
+          <label>OG Image URL (Meta Share)</label>
+          <input
+            v-model="current.ogImageUrl"
+            placeholder="https://domainanda.com/uploads/og-image.jpg"
+          />
+        </div>
+        <div class="grid grid-2 gap-6 mt-6">
+          <div class="form-field">
+            <label>Tipe Schema Markup</label>
+            <select v-model="current.schemaType">
+              <option value="none">Tanpa Schema</option>
+              <option value="organization">Organization</option>
+              <option value="website">WebSite</option>
+              <option value="product">Product</option>
+              <option value="aboutus">AboutPage (About Us)</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Schema JSON Kustom (Opsional)</label>
+            <textarea
+              v-model="current.schemaCustomJson"
+              rows="4"
+              placeholder='Contoh: {"brand":"SNM Group","sku":"PRD-001"}'
+            ></textarea>
+          </div>
+        </div>
       </div>
     </div>
 

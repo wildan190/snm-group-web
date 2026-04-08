@@ -281,16 +281,6 @@
             </div>
           </div>
           
-          <!-- Controls -->
-          <div v-if="block.slides.length > 1" class="carousel-controls">
-            <button class="nav-btn prev" @click="prevCarousel(Number(index), block.slides.length)">
-              <Icon icon="lucide:chevron-left" width="24" height="24" />
-            </button>
-            <button class="nav-btn next" @click="nextCarousel(Number(index), block.slides.length)">
-              <Icon icon="lucide:chevron-right" width="24" height="24" />
-            </button>
-          </div>
-          
           <!-- Dots -->
           <div v-if="block.slides.length > 1" class="carousel-dots">
             <button 
@@ -1169,6 +1159,15 @@ onMounted(() => {
   text-align: left;
   gap: 1rem;
   border-radius: inherit;
+  white-space: normal;
+}
+
+.faq-question span {
+  flex: 1;
+  min-width: 0;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .faq-item.active .faq-question {
@@ -1211,6 +1210,14 @@ onMounted(() => {
   }
   .section-title h2 {
     font-size: 24px;
+  }
+  .faq-question {
+    padding: 1rem;
+    font-size: 15px;
+    align-items: flex-start;
+  }
+  .faq-answer {
+    padding: 0 1rem 1rem;
   }
 }
 
@@ -1411,34 +1418,6 @@ onMounted(() => {
   to { opacity: 1; transform: translateY(0); }
 }
 
-.carousel-controls .nav-btn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 54px;
-  height: 54px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.15);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255,255,255,0.2);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  cursor: pointer;
-  z-index: 20;
-  transition: all 0.3s;
-}
-
-.nav-btn:hover {
-  background: var(--primary);
-  border-color: var(--primary);
-}
-
-.nav-btn.prev { left: 40px; }
-.nav-btn.next { right: 40px; }
-
 .carousel-dots {
   position: absolute;
   bottom: 40px;
@@ -1469,25 +1448,11 @@ onMounted(() => {
 @media (max-width: 991px) {
   .carousel-outer { height: 450px; }
   .slide-title { font-size: 2.5rem; }
-  .carousel-controls .nav-btn {
-    width: 44px;
-    height: 44px;
-    font-size: 1.2rem;
-  }
-  .nav-btn.prev { left: 15px; }
-  .nav-btn.next { right: 15px; }
 }
 
 @media (max-width: 575px) {
   .carousel-outer { height: 400px; }
   .slide-title { font-size: 1.8rem; }
-  .nav-btn {
-    width: 36px;
-    height: 36px;
-    font-size: 1rem;
-  }
-  .nav-btn.prev { left: 10px; }
-  .nav-btn.next { right: 10px; }
 }
 
 /* CTA Section Public */

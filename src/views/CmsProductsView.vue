@@ -12,14 +12,13 @@
     </div>
 
     <div class="page-content">
-      <aside class="product-list-sidebar">
-        <div class="sidebar-header">
-          <h3 class="sidebar-title">Daftar Produk</h3>
-          <span class="badge badge-primary">{{ products.length }}</span>
-        </div>
-
-        <div class="p-4 pt-0">
-          <div class="search-input-wrapper">
+      <div class="table-card">
+        <div class="table-head">
+          <div class="table-title-group">
+            <h3>Daftar Produk</h3>
+            <span class="badge badge-primary">{{ products.length }}</span>
+          </div>
+          <div class="search-input-wrapper table-search">
             <Icon icon="lucide:search" class="search-icon" width="18" />
             <input
               v-model="productSearchQuery"
@@ -28,64 +27,41 @@
               class="w-full"
             />
           </div>
-
-          <div class="list-container p-0">
-            <div
-              v-for="product in filteredProducts"
-              :key="product._id"
-              class="premium-list-item"
-              :class="{ active: current._id === product._id }"
-              @click="selectProduct(product)"
-            >
-              <div v-if="product.imageAssetId" class="product-mini-thumb">
-                <img
-                  :src="getAssetUrl(product.imageAssetId)"
-                  alt="Gambar produk"
-                />
-              </div>
-              <div
-                v-else
-                class="product-mini-thumb flex items-center justify-center bg-slate-100"
-              >
-                <Icon icon="lucide:package" class="text-slate-300" width="24" />
-              </div>
-
-              <div class="item-content">
-                <span class="item-title">{{ product.name }}</span>
-                <span class="item-subtitle">{{ product.slug }}</span>
-                <div class="mt-1 font-bold text-primary text-xs">
-                  Rp {{ product.price || "0" }}
-                </div>
-              </div>
-
-              <div class="item-actions-hover" @click.stop>
-                <button
-                  class="btn-icon-sm"
-                  title="Edit"
-                  @click="selectProduct(product)"
-                >
-                  <Icon icon="lucide:edit-3" width="16" />
-                </button>
-                <button
-                  class="btn-icon-sm danger"
-                  title="Hapus"
-                  @click="deleteProduct(product)"
-                >
-                  <Icon icon="lucide:trash-2" width="16" />
-                </button>
-              </div>
-            </div>
-
-            <div v-if="filteredProducts.length === 0" class="empty-state">
-              <Icon icon="lucide:search-x" width="48" class="text-slate-200 mb-2" />
-              <p>Produk tidak ditemukan</p>
-            </div>
-          </div>
         </div>
-      </aside>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Nama</th>
+                <th>Slug</th>
+                <th>Harga</th>
+                <th class="actions-col">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="product in filteredProducts" :key="product._id">
+                <td>{{ product.name }}</td>
+                <td>{{ product.slug }}</td>
+                <td>Rp {{ product.price || "0" }}</td>
+                <td class="actions-col">
+                  <button class="btn-icon-sm" title="Edit" @click="selectProduct(product)">
+                    <Icon icon="lucide:edit-3" width="16" />
+                  </button>
+                  <button class="btn-icon-sm danger" title="Hapus" @click="deleteProduct(product)">
+                    <Icon icon="lucide:trash-2" width="16" />
+                  </button>
+                </td>
+              </tr>
+              <tr v-if="filteredProducts.length === 0">
+                <td colspan="4" class="empty-row">Produk tidak ditemukan</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
 
       <div class="product-form-area">
-        <div class="card p-8 max-w-4xl mx-auto">
+        <div class="card p-8">
           <h3 class="section-title mb-6">
             {{ current._id ? "Edit Produk" : "Produk Baru" }}
           </h3>
@@ -317,39 +293,81 @@ onMounted(async () => {
 
 .page-content {
   display: flex;
-  flex: 1;
-  overflow: hidden;
-}
-
-.product-list-sidebar {
-  width: 380px;
-  flex-shrink: 0;
-  border-right: 1px solid #e2e8f0;
-  background: white;
-  display: flex;
   flex-direction: column;
+  gap: 1rem;
+  flex: 1;
+  padding: 1rem;
 }
 
-.sidebar-header {
-  padding: 1.5rem 1rem 0.5rem;
+.table-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.table-head {
+  padding: 1rem 1.25rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  flex-wrap: wrap;
 }
 
-.sidebar-title {
+.table-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.table-title-group h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.table-search {
+  min-width: 260px;
+  margin-bottom: 0;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.data-table th {
   font-size: 0.75rem;
-  font-weight: 700;
-  color: #94a3b8;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin: 0;
+  color: #64748b;
+}
+
+.actions-col {
+  width: 140px;
+  text-align: right !important;
+}
+
+.actions-col .btn-icon-sm {
+  margin-left: 0.4rem;
 }
 
 .product-form-area {
   flex: 1;
-  padding: 2rem;
-  overflow-y: auto;
+  padding: 0;
+  overflow: visible;
 }
 
 .product-mini-thumb {
@@ -403,14 +421,9 @@ onMounted(async () => {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem 1rem;
-  color: #94a3b8;
+.empty-row {
   text-align: center;
+  color: #94a3b8;
 }
 
 :deep(.ql-container) {

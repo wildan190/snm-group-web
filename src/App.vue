@@ -7,6 +7,10 @@
           <span class="site-title">{{ site.companyName || 'SNM Group' }}</span>
         </router-link>
 
+        <button class="mobile-nav-toggle" type="button" @click="isMobileNavOpen = true">
+          <Icon icon="lucide:menu" width="20" />
+        </button>
+
         <nav class="site-nav">
           <router-link
             v-for="item in filteredNavbar"
@@ -18,6 +22,32 @@
           </router-link>
         </nav>
       </div>
+
+      <div
+        v-if="isMobileNavOpen"
+        class="mobile-nav-overlay"
+        @click="isMobileNavOpen = false"
+      ></div>
+
+      <aside class="mobile-nav-drawer" :class="{ open: isMobileNavOpen }">
+        <div class="mobile-nav-header">
+          <span class="mobile-nav-title">Menu</span>
+          <button class="mobile-nav-close" type="button" @click="isMobileNavOpen = false">
+            <Icon icon="lucide:x" width="18" />
+          </button>
+        </div>
+        <nav class="mobile-nav-list">
+          <router-link
+            v-for="item in filteredNavbar"
+            :key="`m-${item.link}`"
+            :to="item.link"
+            class="mobile-nav-link"
+            @click="isMobileNavOpen = false"
+          >
+            {{ item.label }}
+          </router-link>
+        </nav>
+      </aside>
     </header>
 
     <main class="page-shell">
@@ -92,6 +122,7 @@ const siteStore = useSiteStore();
 const { site } = storeToRefs(siteStore);
 const assets = ref<any[]>([]);
 const isScrolled = ref(false);
+const isMobileNavOpen = ref(false);
 const whatsappFloat = ref<null | { phoneNumber: string; message?: string; label?: string }>(null);
 
 const isCms = computed(() => route.path.startsWith("/cms"));
@@ -156,6 +187,13 @@ watch(() => site.value.logoAssetId, (newId) => {
     loadAssets();
   }
 });
+
+watch(
+  () => route.fullPath,
+  () => {
+    isMobileNavOpen.value = false;
+  },
+);
 
 function handleScroll() {
   isScrolled.value = window.scrollY > 40;
@@ -226,6 +264,23 @@ onMounted(() => {
   gap: 2rem;
 }
 
+.mobile-nav-toggle {
+  display: none;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.site-header.sticky .mobile-nav-toggle {
+  color: #081828;
+  border-color: #e2e8f0;
+  background: #fff;
+}
+
 .nav-link {
   font-size: 14px;
   font-weight: 500;
@@ -245,6 +300,14 @@ onMounted(() => {
 .site-header.sticky .nav-link:hover,
 .site-header.sticky .nav-link.router-link-active {
   color: var(--primary);
+}
+
+.mobile-nav-overlay {
+  display: none;
+}
+
+.mobile-nav-drawer {
+  display: none;
 }
 
 /* WhatsApp Floating Button (Global) */
@@ -354,6 +417,71 @@ onMounted(() => {
   }
   .site-nav {
     display: none;
+  }
+  .mobile-nav-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .mobile-nav-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    z-index: 1100;
+  }
+  .mobile-nav-drawer {
+    display: block;
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: min(82vw, 320px);
+    height: 100vh;
+    background: #fff;
+    z-index: 1150;
+    transform: translateX(100%);
+    transition: transform 0.2s ease;
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.12);
+  }
+  .mobile-nav-drawer.open {
+    transform: translateX(0);
+  }
+  .mobile-nav-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .mobile-nav-title {
+    font-weight: 700;
+    color: #081828;
+  }
+  .mobile-nav-close {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    color: #334155;
+  }
+  .mobile-nav-list {
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem;
+    gap: 0.25rem;
+  }
+  .mobile-nav-link {
+    padding: 0.75rem 0.9rem;
+    color: #0f172a;
+    border-radius: 8px;
+    font-weight: 500;
+  }
+  .mobile-nav-link.router-link-active,
+  .mobile-nav-link:hover {
+    background: #f1f5f9;
+    color: var(--primary);
   }
   .header-container {
     height: 56px;

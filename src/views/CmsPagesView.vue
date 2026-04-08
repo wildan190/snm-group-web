@@ -12,14 +12,52 @@
     </div>
 
     <div class="page-content">
-      <div class="sidebar-wrapper">
-        <PageList
-          :pages="pages"
-          :current-id="current._id"
-          @select="selectPage"
-          @delete="deletePage"
-          @set-homepage="setHomepage"
-        />
+      <div class="table-card">
+        <div class="table-head">
+          <h3>Daftar Halaman</h3>
+          <span class="badge badge-primary">{{ pages.length }}</span>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Judul</th>
+                <th>Slug</th>
+                <th>Status</th>
+                <th class="actions-col">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="page in pages" :key="page._id">
+                <td>{{ page.title }}</td>
+                <td>/{{ page.slug }}</td>
+                <td>
+                  <span v-if="page.isHomepage" class="badge badge-blue">Homepage</span>
+                  <span v-else class="text-slate-500">-</span>
+                </td>
+                <td class="actions-col">
+                  <button class="btn-icon-sm" title="Edit" @click="selectPage(page)">
+                    <Icon icon="lucide:edit-3" width="16" />
+                  </button>
+                  <button
+                    v-if="!page.isHomepage"
+                    class="btn-icon-sm success"
+                    title="Jadikan Homepage"
+                    @click="setHomepage(page)"
+                  >
+                    <Icon icon="lucide:home" width="16" />
+                  </button>
+                  <button class="btn-icon-sm danger" title="Hapus" @click="deletePage(page)">
+                    <Icon icon="lucide:trash-2" width="16" />
+                  </button>
+                </td>
+              </tr>
+              <tr v-if="pages.length === 0">
+                <td colspan="4" class="empty-row">Belum ada halaman.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div class="form-wrapper">
@@ -123,7 +161,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { Icon } from "@iconify/vue";
-import PageList from "@/components/cms/PageList.vue";
 import PageForm from "@/components/cms/PageForm.vue";
 import ProductModal from "@/components/cms/ProductModal.vue";
 import AssetModal from "@/components/cms/AssetModal.vue";
@@ -344,23 +381,76 @@ const updateNewBlockType = (type: string) => {
 
 .page-content {
   display: flex;
+  flex-direction: column;
+  gap: 1rem;
   flex: 1;
-  overflow: hidden;
+  padding: 1rem;
 }
 
-.sidebar-wrapper {
-  width: 380px;
-  flex-shrink: 0;
-  border-right: 1px solid #e2e8f0;
+.table-card {
   background: white;
-  overflow-y: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.table-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.table-head h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.data-table th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+}
+
+.actions-col {
+  width: 180px;
+  text-align: right !important;
+}
+
+.actions-col .btn-icon-sm {
+  margin-left: 0.4rem;
+}
+
+.empty-row {
+  text-align: center !important;
+  color: #94a3b8;
 }
 
 .form-wrapper {
   flex: 1;
-  background: #f8fafc;
+  background: white;
   position: relative;
-  overflow: hidden; /* Prevent double scrollbars */
+  overflow: visible;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
 }
 
 .empty-state-full {

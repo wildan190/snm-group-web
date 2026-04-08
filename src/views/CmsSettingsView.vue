@@ -30,6 +30,42 @@
           </div>
         </div>
 
+        <div class="theme-card card list-card">
+          <h3 class="section-title">Tema Warna Landing Page</h3>
+          <div class="form-grid split-columns two">
+            <div class="form-field">
+              <label>Primary</label>
+              <div class="color-input-wrap">
+                <input type="color" v-model="site.themePrimary" class="color-picker" />
+                <input v-model="site.themePrimary" placeholder="#7E57FF" />
+              </div>
+            </div>
+            <div class="form-field">
+              <label>Primary Hover</label>
+              <div class="color-input-wrap">
+                <input type="color" v-model="site.themePrimaryHover" class="color-picker" />
+                <input v-model="site.themePrimaryHover" placeholder="#6a3fff" />
+              </div>
+            </div>
+          </div>
+          <div class="form-grid split-columns two">
+            <div class="form-field">
+              <label>Dark / Heading</label>
+              <div class="color-input-wrap">
+                <input type="color" v-model="site.themeDark" class="color-picker" />
+                <input v-model="site.themeDark" placeholder="#081828" />
+              </div>
+            </div>
+            <div class="form-field">
+              <label>Background App</label>
+              <div class="color-input-wrap">
+                <input type="color" v-model="site.themeBackground" class="color-picker" />
+                <input v-model="site.themeBackground" placeholder="#ffffff" />
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="form-field logo-field">
           <label>Logo</label>
           <div class="logo-selector">
@@ -153,6 +189,22 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+}
+
+.color-input-wrap {
+  display: grid;
+  grid-template-columns: 46px 1fr;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.color-picker {
+  width: 46px;
+  height: 42px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 0.2rem;
+  background: #fff;
 }
 
 .logo-field {

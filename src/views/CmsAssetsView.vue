@@ -19,6 +19,37 @@
     <div class="content-grid">
       <!-- Upload Section -->
       <section class="upload-section">
+        <div v-if="folderFeatureAvailable" class="folder-card card glass">
+          <div class="folder-card-header">
+            <h3>Folder</h3>
+            <button class="btn-secondary btn-sm" type="button" @click="createFolder">
+              <Icon icon="lucide:folder-plus" class="mr-1" />
+              Folder Baru
+            </button>
+          </div>
+          <div class="folder-list">
+            <button
+              class="folder-item"
+              :class="{ active: selectedFolderId === null }"
+              type="button"
+              @click="selectedFolderId = null"
+            >
+              <Icon icon="lucide:inbox" />
+              Semua Asset
+            </button>
+            <button
+              v-for="folder in folders"
+              :key="folder._id"
+              class="folder-item"
+              :class="{ active: selectedFolderId === folder._id }"
+              type="button"
+              @click="selectedFolderId = folder._id"
+            >
+              <Icon icon="lucide:folder" />
+              {{ folder.name }}
+            </button>
+          </div>
+        </div>
         <div class="upload-dropzone card glass" @click="triggerFileInput" @dragover.prevent="isDragging = true" @dragleave.prevent="isDragging = false" @drop.prevent="handleDrop">
           <input type="file" ref="fileInput" @change="onFileChange" class="hidden" />
           <div class="dropzone-content" :class="{ 'dragging': isDragging }">
@@ -105,20 +136,33 @@ type Asset = {
   originalName: string;
   mimetype: string;
   url: string;
+  folderId?: string | null;
   size?: number;
   uploadedAt?: string;
+};
+
+type AssetFolder = {
+  _id: string;
+  name: string;
 };
 
 const fileInput = ref<HTMLInputElement | null>(null);
 const isUploading = ref(false);
 const isDragging = ref(false);
 const assets = ref<Asset[]>([]);
+const folders = ref<AssetFolder[]>([]);
 const searchQuery = ref("");
+const selectedFolderId = ref<string | null>(null);
+const folderFeatureAvailable = ref(true);
 
 const filteredAssets = computed(() => {
-  if (!searchQuery.value) return assets.value;
+  const folderFiltered = selectedFolderId.value
+    ? assets.value.filter((asset) => asset.folderId === selectedFolderId.value)
+    : assets.value;
+
+  if (!searchQuery.value) return folderFiltered;
   const q = searchQuery.value.toLowerCase();
-  return assets.value.filter(a => 
+  return folderFiltered.filter(a =>
     a.originalName.toLowerCase().includes(q) || 
     a.mimetype.toLowerCase().includes(q)
   );
@@ -130,6 +174,63 @@ async function loadAssets() {
     assets.value = res.data;
   } catch (err) {
     console.error("Gagal memuat aset:", err);
+  }
+}
+
+async function loadFolders() {
+  try {
+    const res = await api.get("/asset-folders");
+    folders.value = res.data;
+  } catch (err) {
+    const status = (err as any)?.response?.status;
+    if (status === 404) {
+      folderFeatureAvailable.value = false;
+      folders.value = [];
+      selectedFolderId.value = null;
+      return;
+    }
+    console.error("Gagal memuat folder asset:", err);
+  }
+}
+
+async function createFolder() {
+  if (!folderFeatureAvailable.value) return;
+
+  const result = await Swal.fire({
+    title: "Folder Baru",
+    input: "text",
+    inputLabel: "Nama folder",
+    inputPlaceholder: "Contoh: Banner Homepage",
+    showCancelButton: true,
+    confirmButtonText: "Buat",
+    cancelButtonText: "Batal",
+    inputValidator: (value) => (!value?.trim() ? "Nama folder wajib diisi" : null),
+  });
+
+  if (!result.isConfirmed || !result.value) return;
+
+  try {
+    const res = await api.post("/asset-folders", {
+      name: result.value,
+    });
+    await loadFolders();
+    selectedFolderId.value = res.data._id;
+    Toast.fire({
+      icon: "success",
+      title: "Folder berhasil dibuat",
+    });
+  } catch (err: any) {
+    if (err?.response?.status === 404) {
+      folderFeatureAvailable.value = false;
+      folders.value = [];
+      selectedFolderId.value = null;
+      return;
+    }
+    Swal.fire({
+      icon: "error",
+      title: "Gagal membuat folder",
+      text: err?.response?.data?.error || "Terjadi kesalahan saat membuat folder.",
+    });
   }
 }
 
@@ -154,6 +255,9 @@ async function uploadFile(file: File) {
   try {
     const formData = new FormData();
     formData.append("file", file);
+    if (folderFeatureAvailable.value && selectedFolderId.value) {
+      formData.append("folderId", selectedFolderId.value);
+    }
     await api.post("/assets", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
@@ -260,7 +364,9 @@ const Toast = Swal.mixin({
   timerProgressBar: true,
 });
 
-onMounted(loadAssets);
+onMounted(async () => {
+  await Promise.all([loadAssets(), loadFolders()]);
+});
 </script>
 
 <style scoped>
@@ -311,16 +417,68 @@ onMounted(loadAssets);
   gap: 2rem;
 }
 
-@media (max-width: 1024px) {
-  .content-grid {
-    grid-template-columns: 1fr;
-  }
+.folder-card {
+  position: sticky;
+  top: 1rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  background: white;
+}
+
+.folder-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.folder-card-header h3 {
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.folder-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.folder-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  border: 1px solid var(--border-color);
+  background: #fff;
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  font-size: 0.85rem;
+}
+
+.folder-item:hover {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+.folder-item.active {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-light);
+}
+
+.btn-sm {
+  padding: 0.4rem 0.65rem;
+  font-size: 0.75rem;
 }
 
 /* Dropzone Styling */
 .upload-dropzone {
   position: sticky;
-  top: 1rem;
+  top: 19rem;
   cursor: pointer;
   padding: 2.5rem 1.5rem;
   border: 2px dashed var(--border-color);
@@ -493,5 +651,16 @@ onMounted(loadAssets);
 
 .hidden {
   display: none;
+}
+
+@media (max-width: 1024px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .folder-card,
+  .upload-dropzone {
+    position: static;
+  }
 }
 </style>

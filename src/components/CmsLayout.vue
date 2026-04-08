@@ -1,29 +1,43 @@
 <template>
   <div class="cms-shell">
-    <aside class="cms-sidebar">
+    <button class="mobile-menu-btn" type="button" @click="isMobileMenuOpen = true">
+      <Icon icon="lucide:menu" width="20" />
+      <span>Menu</span>
+    </button>
+
+    <div
+      v-if="isMobileMenuOpen"
+      class="sidebar-overlay"
+      @click="isMobileMenuOpen = false"
+    ></div>
+
+    <aside class="cms-sidebar" :class="{ open: isMobileMenuOpen }">
       <div class="cms-logo">
         <div class="logo-box">
           <Icon icon="mdi:shield-account" width="20" />
         </div>
         <span class="logo-text">SNM Admin</span>
+        <button class="close-menu-btn" type="button" @click="isMobileMenuOpen = false">
+          <Icon icon="lucide:x" width="18" />
+        </button>
       </div>
       
       <nav class="cms-nav">
         <div class="nav-group">
           <span class="nav-label">Menu Utama</span>
-          <router-link to="/cms/dashboard" class="nav-item">
+          <router-link to="/cms/dashboard" class="nav-item" @click="closeMenuOnMobile">
             <Icon icon="lucide:layout-dashboard" class="item-icon" />
             <span>Dashboard</span>
           </router-link>
-          <router-link to="/cms/pages" class="nav-item">
+          <router-link to="/cms/pages" class="nav-item" @click="closeMenuOnMobile">
             <Icon icon="lucide:file-text" class="item-icon" />
             <span>Halaman</span>
           </router-link>
-          <router-link to="/cms/products" class="nav-item">
+          <router-link to="/cms/products" class="nav-item" @click="closeMenuOnMobile">
             <Icon icon="lucide:shopping-bag" class="item-icon" />
             <span>Produk</span>
           </router-link>
-          <router-link to="/cms/assets" class="nav-item">
+          <router-link to="/cms/assets" class="nav-item" @click="closeMenuOnMobile">
             <Icon icon="lucide:image" class="item-icon" />
             <span>Aset Media</span>
           </router-link>
@@ -31,15 +45,15 @@
 
         <div class="nav-group">
           <span class="nav-label">Konfigurasi</span>
-          <router-link to="/cms/navbar" class="nav-item">
+          <router-link to="/cms/navbar" class="nav-item" @click="closeMenuOnMobile">
             <Icon icon="lucide:menu" class="item-icon" />
             <span>Navigasi</span>
           </router-link>
-          <router-link to="/cms/settings" class="nav-item">
+          <router-link to="/cms/settings" class="nav-item" @click="closeMenuOnMobile">
             <Icon icon="lucide:settings" class="item-icon" />
             <span>Pengaturan</span>
           </router-link>
-          <router-link to="/cms/users" class="nav-item">
+          <router-link to="/cms/users" class="nav-item" @click="closeMenuOnMobile">
             <Icon icon="lucide:users" class="item-icon" />
             <span>Pengelola</span>
           </router-link>
@@ -63,9 +77,18 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import { Icon } from "@iconify/vue";
 const auth = useAuthStore();
+const isMobileMenuOpen = ref(false);
+
+function closeMenuOnMobile() {
+  if (window.innerWidth <= 900) {
+    isMobileMenuOpen.value = false;
+  }
+}
+
 function logout() {
   auth.logout();
   window.location.href = "/cms/login";
@@ -75,8 +98,13 @@ function logout() {
 <style scoped>
 .cms-shell {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
   background: var(--bg-app);
+  overflow: hidden;
+}
+
+.mobile-menu-btn {
+  display: none;
 }
 
 .cms-sidebar {
@@ -85,9 +113,10 @@ function logout() {
   border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  position: sticky;
-  top: 0;
   height: 100vh;
+  z-index: 1200;
+  flex-shrink: 0;
+  overflow: hidden;
 }
 
 .cms-logo {
@@ -114,12 +143,21 @@ function logout() {
   letter-spacing: -0.02em;
 }
 
+.close-menu-btn {
+  display: none;
+  margin-left: auto;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+}
+
 .cms-nav {
   flex: 1;
   padding: 0 0.75rem;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  overflow-y: auto;
 }
 
 .nav-group {
@@ -191,7 +229,9 @@ function logout() {
 
 .cms-main {
   flex: 1;
+  height: 100vh;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .cms-container {
@@ -202,29 +242,69 @@ function logout() {
   height: 100%;
 }
 
+.sidebar-overlay {
+  display: none;
+}
+
 @media (max-width: 900px) {
-  .cms-shell {
-    flex-direction: column;
+  .mobile-menu-btn {
+    display: inline-flex;
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 1250;
+    align-items: center;
+    gap: 0.4rem;
+    border: none;
+    border-radius: 999px;
+    padding: 0.65rem 0.9rem;
+    background: var(--primary);
+    color: white;
+    box-shadow: var(--shadow-lg);
   }
+
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(2px);
+    z-index: 1150;
+  }
+
   .cms-sidebar {
-    width: 100%;
-    height: auto;
-    position: static;
+    width: min(300px, 85vw);
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
   }
+
+  .cms-sidebar.open {
+    transform: translateX(0);
+  }
+
   .cms-logo {
     padding: 1rem;
   }
+
+  .close-menu-btn {
+    display: inline-flex;
+  }
+
   .cms-nav {
-    flex-direction: row;
-    overflow-x: auto;
+    flex-direction: column;
+    overflow-x: visible;
     padding: 0.5rem;
     gap: 0.5rem;
   }
   .nav-group {
-    flex-direction: row;
+    flex-direction: column;
   }
   .nav-label {
-    display: none;
+    display: block;
   }
 }
 </style>
