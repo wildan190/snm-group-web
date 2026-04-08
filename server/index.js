@@ -480,7 +480,16 @@ app.get("/sitemap.xml", async (req, res) => {
 
 app.get("/api/status", (req, res) => res.json({ status: "ok" }));
 
-app.listen(PORT, async () => {
-  await connectDb();
-  console.log(`CMS backend running on http://localhost:${PORT}`);
-});
+async function startServer() {
+  try {
+    await connectDb();
+    app.listen(PORT, () => {
+      console.log(`CMS backend running on http://localhost:${PORT}`);
+    });
+  } catch (err) {
+    console.error("Failed to start CMS backend:", err);
+    process.exit(1);
+  }
+}
+
+startServer();
