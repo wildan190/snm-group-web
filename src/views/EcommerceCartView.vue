@@ -45,9 +45,10 @@
         <label class="form-field"><span>Alamat</span><textarea rows="3" v-model="customer.address"></textarea></label>
 
         <div class="checkout-total">Total: <strong>Rp {{ Number(cartTotal).toLocaleString("id-ID") }}</strong></div>
-        <button class="btn-primary w-full" @click="checkout">Buat Order</button>
-        <p v-if="orderId" class="mt-3">Order ID: <strong>{{ orderId }}</strong></p>
-        <a v-if="redirectUrl" :href="redirectUrl" target="_blank" class="btn-secondary w-full mt-2">Bayar Sekarang</a>
+        <button class="btn-primary w-full" :disabled="checkingOut" @click="checkout">
+          {{ checkingOut ? 'Memproses...' : 'Buat Order & Bayar' }}
+        </button>
+        <p v-if="orderId" class="mt-3 muted">Order ID: <strong>{{ orderId }}</strong></p>
       </aside>
     </div>
   </section>
@@ -62,7 +63,7 @@ import { useShopCart } from "@/composables/useShopCart";
 const assets = ref<any[]>([]);
 const customer = ref({ name: "", email: "", phone: "", address: "" });
 const orderId = ref("");
-const redirectUrl = ref("");
+const checkingOut = ref(false);
 
 const { cart, cartTotal, decreaseQty, increaseQty, removeCartItem, clearCart, formatVariant } = useShopCart();
 
@@ -70,19 +71,86 @@ function assetUrl(assetId: string) {
   return assets.value.find((a) => a._id === assetId)?.url || "";
 }
 
+function loadSnapScript(isProduction: boolean): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const snapUrl = isProduction
+      ? "https://app.midtrans.com/snap/snap.js"
+      : "https://app.sandbox.midtrans.com/snap/snap.js";
+
+    // Jika sudah ada script yang sama, langsung resolve
+    if (document.querySelector(`script[src="${snapUrl}"]`)) {
+      resolve();
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = snapUrl;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("Gagal memuat Midtrans Snap.js"));
+    document.head.appendChild(script);
+  });
+}
+
 async function checkout() {
   if (!cart.value.length) return;
+  checkingOut.value = true;
   try {
+    // 1. Ambil config untuk clientKey & isProduction
+    const cfgRes = await api.get("/ecommerce/config");
+    const cfg = cfgRes.data || {};
+    const clientKey: string = cfg.payment?.clientKey || "";
+    const isProduction: boolean = cfg.payment?.isProduction ?? false;
+
+    if (!clientKey) {
+      await Swal.fire("Konfigurasi Belum Lengkap", "Client Key Midtrans belum dikonfigurasi oleh admin.", "warning");
+      return;
+    }
+
+    // 2. Buat order di backend
     const res = await api.post("/ecommerce/orders", {
       items: cart.value,
       customer: customer.value,
     });
+
     orderId.value = res.data.orderId;
-    redirectUrl.value = res.data.payment?.redirectUrl || "";
+    const snapToken: string = res.data.payment?.transactionToken || "";
+
+    if (!snapToken) {
+      await Swal.fire("Order Dibuat", `Order ID: ${orderId.value}. Pembayaran belum dikonfigurasi, hubungi admin.`, "info");
+      clearCart();
+      return;
+    }
+
+    // 3. Muat Snap.js dan buka popup pembayaran
+    await loadSnapScript(isProduction);
+
     clearCart();
-    await Swal.fire("Order dibuat", `Order ID: ${orderId.value}`, "success");
+
+    // @ts-ignore - window.snap diinjeksikan oleh script Midtrans
+    window.snap.pay(snapToken, {
+      // Set client key via data attribute yang dibutuhkan Snap.js
+      onSuccess(result: any) {
+        Swal.fire("Pembayaran Berhasil", `Order ID: ${orderId.value}`, "success");
+      },
+      onPending(result: any) {
+        Swal.fire("Menunggu Pembayaran", `Order ID: ${orderId.value}. Selesaikan pembayaran Anda.`, "info");
+      },
+      onError(result: any) {
+        Swal.fire("Pembayaran Gagal", "Silakan coba lagi atau hubungi kami.", "error");
+      },
+      onClose() {
+        // Pengguna menutup popup tanpa menyelesaikan pembayaran
+        Swal.fire(
+          "Pembayaran Belum Selesai",
+          `Order ID: ${orderId.value} telah dibuat. Anda dapat menyelesaikan pembayaran kapan saja.`,
+          "warning"
+        );
+      },
+    });
   } catch (err: any) {
     await Swal.fire("Gagal", err?.response?.data?.error || "Gagal checkout", "error");
+  } finally {
+    checkingOut.value = false;
   }
 }
 
