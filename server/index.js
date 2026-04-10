@@ -1081,7 +1081,20 @@ app.post(
     }
 
     const isS3 = !!req.file.location;
-    const fileUrl = isS3 ? req.file.location : `/uploads/${req.file.filename}`;
+    let fileUrl = `/uploads/${req.file.filename}`;
+    
+    if (isS3) {
+      // req.file.location is usually e.g., https://[project].storage.supabase.co/bucket/key
+      // Supabase public URL needs: https://[project].supabase.co/storage/v1/object/public/bucket/key
+      const projectRefMatch = process.env.S3_ENDPOINT?.match(/https:\/\/([a-z0-9-]+)\.storage\.supabase\.co/);
+      if (projectRefMatch && process.env.S3_BUCKET) {
+        const projectId = projectRefMatch[1];
+        fileUrl = `https://${projectId}.supabase.co/storage/v1/object/public/${process.env.S3_BUCKET}/${req.file.key}`;
+      } else {
+        fileUrl = req.file.location;
+      }
+    }
+
     const filenameKey = isS3 ? req.file.key : req.file.filename;
 
     const fileData = {
