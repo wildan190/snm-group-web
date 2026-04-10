@@ -17,11 +17,13 @@
               class="absolute inset-0 opacity-0 cursor-pointer z-10"
               @change="onFileChange"
             />
-            <div class="file-input-placeholder" :class="{ 'has-file': !!selectedFile }">
-              <Icon :icon="selectedFile ? 'lucide:file-check' : 'lucide:upload-cloud'" :class="{ 'mr-2': !!selectedFile }" />
+            <div class="file-input-placeholder" :class="{ 'has-file': !!selectedFile, 'has-error': !!uploadError }">
+              <Icon :icon="selectedFile ? 'lucide:file-check' : (uploadError ? 'lucide:alert-circle' : 'lucide:upload-cloud')" :class="{ 'mr-2': !!selectedFile || !!uploadError }" />
               <span v-if="selectedFile" class="font-semibold">{{ selectedFile.name }}</span>
+              <span v-else-if="uploadError" class="font-semibold text-red-500">{{ uploadError }}</span>
               <span v-else class="font-semibold text-slate-500">Klik atau Taruh File untuk Unggah Asset Baru</span>
             </div>
+            <p class="text-xs text-slate-400 mt-1 text-center">Ukuran maks. 500 KB</p>
           </div>
 
           <div v-if="selectedFile" class="flex flex-col gap-3 mt-4">
@@ -110,23 +112,37 @@ const emit = defineEmits<{
   upload: [file: File];
 }>();
 
+const MAX_FILE_SIZE = 500 * 1024; // 500 KB
 const selectedFile = ref<File | null>(null);
 const localSelectedAssetId = ref<string | null>(null);
+const uploadError = ref<string>("");
 
 function onFileChange(event: Event): void {
   const target = event.target as HTMLInputElement;
-  selectedFile.value = target.files?.[0] ?? null;
+  const file = target.files?.[0] ?? null;
+  uploadError.value = "";
+
+  if (file && file.size > MAX_FILE_SIZE) {
+    uploadError.value = `File terlalu besar (${(file.size / 1024).toFixed(0)} KB). Maks. 500 KB.`;
+    selectedFile.value = null;
+    target.value = ""; // Reset input
+    return;
+  }
+
+  selectedFile.value = file;
 }
 
 function handleUpload(): void {
   if (selectedFile.value) {
     emit("upload", selectedFile.value);
-    selectedFile.value = null; // Clear after emitting
+    selectedFile.value = null;
+    uploadError.value = "";
   }
 }
 
 function clearSelection(): void {
   selectedFile.value = null;
+  uploadError.value = "";
 }
 
 function confirmSelection(): void {
