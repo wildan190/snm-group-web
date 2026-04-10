@@ -9,6 +9,8 @@ import path from "path";
 import fs from "fs";
 import crypto from "crypto";
 import os from "os";
+import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import multerS3 from "multer-s3";
 
 dotenv.config();
 
@@ -36,14 +38,42 @@ const sanitizeFileName = (originalName) => {
   return baseName.replace(/[^a-zA-Z0-9_.-]/g, "_");
 };
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadDir),
-  filename: (req, file, cb) => {
-    const safeName = sanitizeFileName(file.originalname);
-    cb(null, `${Date.now()}-${safeName}`);
+const s3Client = process.env.S3_ENDPOINT ? new S3Client({
+  endpoint: process.env.S3_ENDPOINT,
+  region: process.env.S3_REGION || "ap-northeast-1",
+  credentials: {
+    accessKeyId: process.env.S3_ACCESS_KEY,
+    secretAccessKey: process.env.S3_SECRET_KEY,
   },
-});
+  forcePathStyle: true,
+}) : null;
+
+let storage;
+if (s3Client && process.env.S3_BUCKET) {
+  storage = multerS3({
+    s3: s3Client,
+    bucket: process.env.S3_BUCKET,
+    contentType: multerS3.AUTO_CONTENT_TYPE,
+    metadata: function (req, file, cb) {
+      cb(null, { fieldName: file.fieldname });
+    },
+    key: function (req, file, cb) {
+      const safeName = sanitizeFileName(file.originalname);
+      cb(null, `${Date.now()}-${safeName}`);
+    },
+  });
+} else {
+  storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, uploadDir),
+    filename: (req, file, cb) => {
+      const safeName = sanitizeFileName(file.originalname);
+      cb(null, `${Date.now()}-${safeName}`);
+    },
+  });
+}
+
 const upload = multer({ storage });
+
 
 const app = express();
 app.use(cors());
@@ -1050,10 +1080,14 @@ app.post(
       }
     }
 
+    const isS3 = !!req.file.location;
+    const fileUrl = isS3 ? req.file.location : `/uploads/${req.file.filename}`;
+    const filenameKey = isS3 ? req.file.key : req.file.filename;
+
     const fileData = {
       originalName: req.file.originalname,
-      filename: req.file.filename,
-      url: `/uploads/${req.file.filename}`,
+      filename: filenameKey,
+      url: fileUrl,
       mimetype: req.file.mimetype,
       size: req.file.size,
       folderId: folderId || null,
@@ -1071,15 +1105,25 @@ app.delete("/api/assets/:id", authMiddleware, async (req, res) => {
     if (!asset) return res.status(404).json({ error: "Aset tidak ditemukan" });
 
     // Hapus file fisik
-    const filePath = path.join(uploadDir, asset.filename);
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
+    if (s3Client && process.env.S3_BUCKET && asset.url.startsWith('http')) {
+      // Hapus dari S3
+      await s3Client.send(new DeleteObjectCommand({
+        Bucket: process.env.S3_BUCKET,
+        Key: asset.filename // Kita menyimpan key di filename
+      }));
+    } else {
+      // Hapus file fisik lokal
+      const filePath = path.join(uploadDir, asset.filename);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
     }
 
     // Hapus dari database
     await db.collection("assets").deleteOne({ _id: new ObjectId(id) });
     res.json({ success: true });
   } catch (err) {
+    console.error("Gagal menghapus aset:", err);
     res.status(500).json({ error: "Gagal menghapus aset" });
   }
 });
