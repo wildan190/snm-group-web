@@ -23,7 +23,10 @@
               <span v-else-if="uploadError" class="font-semibold text-red-500">{{ uploadError }}</span>
               <span v-else class="font-semibold text-slate-500">Klik atau Taruh File untuk Unggah Asset Baru</span>
             </div>
-            <p class="text-xs text-slate-400 mt-1 text-center">Ukuran maks. 500 KB</p>
+            <p class="text-xs mt-2 text-center flex items-center justify-center gap-1" style="color: #f59e0b; font-weight: 600;">
+              <Icon icon="lucide:info" width="13" style="flex-shrink: 0;" />
+              Ukuran file maksimal <strong>500 KB</strong>. File lebih besar akan ditolak.
+            </p>
           </div>
 
           <div v-if="selectedFile" class="flex flex-col gap-3 mt-4">
