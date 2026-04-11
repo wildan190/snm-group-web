@@ -42,6 +42,7 @@
         @remove-block-from-column="removeBlockFromColumn"
         @open-nested-image-picker="openAssetModalForNested"
         @update-new-block-type="updateNewBlockType"
+        @open-og-image-picker="openOgImagePicker"
         @save-page="savePageAndStay"
       />
     </div>
@@ -118,6 +119,7 @@ const currentSlideIndex = ref<number | null>(null);
 const currentNestedColIndex = ref<number | null>(null);
 const currentNestedIndex = ref<number | null>(null);
 const currentHeroTarget = ref<"background" | "image" | null>(null);
+const isOgImagePicker = ref(false);
 const currentProductBlock = ref<Extract<PageBlock, { type: "product" }> | null>(null);
 
 async function hydrateEditor() {
@@ -169,6 +171,10 @@ function openAssetModalForNested(blockIndex: number, colIndex: number, nestedInd
   currentNestedIndex.value = nestedIndex;
   showAssetModal.value = true;
 }
+function openOgImagePicker() {
+  isOgImagePicker.value = true;
+  showAssetModal.value = true;
+}
 function closeAssetModal() {
   showAssetModal.value = false;
   currentBlockIndex.value = null;
@@ -177,8 +183,13 @@ function closeAssetModal() {
   currentNestedColIndex.value = null;
   currentNestedIndex.value = null;
   currentHeroTarget.value = null;
+  isOgImagePicker.value = false;
 }
 function selectAsset(asset: Asset) {
+  if (isOgImagePicker.value) {
+    current.value.ogImageAssetId = asset._id;
+    return closeAssetModal();
+  }
   const blockIndex = currentBlockIndex.value;
   if (blockIndex === null) return closeAssetModal();
   const block = current.value.blocks[blockIndex];

@@ -11,6 +11,16 @@
   padding: 1rem 1.5rem 3rem; /* Tighter side padding */
 }
 
+.og-image-picker {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  background: #f8fafc;
+  padding: 1rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+}
+
 /* Block Cards */
 .block-card-premium {
   background: white;

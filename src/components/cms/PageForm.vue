@@ -102,11 +102,36 @@
           </div>
         </div>
         <div class="form-field mt-6">
-          <label>OG Image URL (Meta Share)</label>
-          <input
-            v-model="current.ogImageUrl"
-            placeholder="https://domainanda.com/uploads/og-image.jpg"
-          />
+          <label>OG Image (Meta Share)</label>
+          <div class="og-image-picker">
+            <!-- Asset Picker -->
+            <div
+              class="asset-selector-premium mini"
+              style="height: 80px; flex: 1;"
+              @click="$emit('openOgImagePicker')"
+            >
+              <div v-if="current.ogImageAssetId" class="image-preview-mini">
+                <img :src="getAssetUrl(current.ogImageAssetId)" alt="OG Image preview" />
+                <Icon icon="lucide:refresh-cw" class="refresh-icon" />
+              </div>
+              <div v-else class="upload-placeholder-mini">
+                <Icon icon="lucide:image-plus" />
+                <span>Pilih dari Asset</span>
+              </div>
+            </div>
+            <!-- Atau URL Manual -->
+            <div style="flex: 1;">
+              <p class="text-xs text-slate-500 mb-1">Atau masukkan URL manual:</p>
+              <input
+                v-model="current.ogImageUrl"
+                placeholder="https://domainanda.com/og-image.jpg"
+              />
+              <p class="text-xs text-slate-400 mt-1">
+                <Icon icon="lucide:info" width="11" style="display:inline;" />
+                Asset diprioritaskan jika dipilih dari katalog.
+              </p>
+            </div>
+          </div>
         </div>
         <div class="grid grid-2 gap-6 mt-6">
           <div class="form-field">
@@ -895,6 +920,7 @@ const emit = defineEmits<{
   openCarouselImagePicker: [index: number, slideIndex: number];
   openCtaBgPicker: [index: number];
   openNestedImagePicker: [blockIndex: number, colIndex: number, nestedIndex: number];
+  openOgImagePicker: [];
   addCarouselSlide: [block: PageBlock];
   removeCarouselSlide: [block: PageBlock, index: number];
   addBlockToColumn: [column: any, type: PageBlock['type']];

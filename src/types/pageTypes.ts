@@ -120,6 +120,7 @@ export interface PageData {
   ogTitle?: string;
   ogDescription?: string;
   ogImageUrl?: string;
+  ogImageAssetId?: string;
   schemaType?: "none" | "organization" | "website" | "product" | "aboutus";
   schemaCustomJson?: string;
   pageStatus?: "draft" | "published";
