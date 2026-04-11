@@ -171,6 +171,36 @@ function calculateDiscountedPrice(price, discount, now = new Date()) {
   return Math.max(0, Math.round(base - (base * value) / 100));
 }
 
+async function populatePageOgImage(req, page) {
+  if (!page) return page;
+  
+  // If ogImageUrl is already set (manual), ensure it's absolute
+  if (page.ogImageUrl && !page.ogImageUrl.startsWith("http")) {
+    const baseUrl = resolveBaseUrl(req);
+    page.ogImageUrl = `${baseUrl}${page.ogImageUrl.startsWith("/") ? "" : "/"}${page.ogImageUrl}`;
+  }
+
+  // If ogImageAssetId is present and ogImageUrl is empty, resolve it
+  if (page.ogImageAssetId && !page.ogImageUrl) {
+    try {
+      if (ObjectId.isValid(page.ogImageAssetId)) {
+        const asset = await db.collection("assets").findOne({ _id: new ObjectId(page.ogImageAssetId) });
+        if (asset && asset.url) {
+          if (asset.url.startsWith("http")) {
+            page.ogImageUrl = asset.url;
+          } else {
+            const baseUrl = resolveBaseUrl(req);
+            page.ogImageUrl = `${baseUrl}${asset.url.startsWith("/") ? "" : "/"}${asset.url}`;
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Error populating OG image:", e);
+    }
+  }
+  return page;
+}
+
 function getMidtransPaymentConfig(siteConfig) {
   return normalizeEcommerceConfig(siteConfig?.ecommerce || {}).payment;
 }
@@ -179,6 +209,33 @@ function buildMidtransSignature(orderId, statusCode, grossAmount, serverKey) {
   const payload = `${orderId}${statusCode}${grossAmount}${serverKey}`;
   return crypto.createHash("sha512").update(payload).digest("hex");
 }
+
+const apiCache = {
+  data: new Map(),
+  set(key, value, ttlMs = 3600000) {
+    this.data.set(key, {
+      value,
+      expiresAt: Date.now() + ttlMs,
+    });
+  },
+  get(key) {
+    const entry = this.data.get(key);
+    if (!entry) return null;
+    if (Date.now() > entry.expiresAt) {
+      this.data.delete(key);
+      return null;
+    }
+    return entry.value;
+  },
+  del(key) {
+    this.data.delete(key);
+  },
+  clearByPrefix(prefix) {
+    for (const key of this.data.keys()) {
+      if (key.startsWith(prefix)) this.data.delete(key);
+    }
+  },
+};
 
 function mapMidtransToPaymentStatus(transactionStatus, fraudStatus) {
   if (transactionStatus === "settlement") return "paid";
@@ -379,7 +436,27 @@ app.delete("/api/auth/users/:id", authMiddleware, async (req, res) => {
 });
 
 app.get("/api/site", async (req, res) => {
+  const cacheKey = "site_config";
+  const cached = apiCache.get(cacheKey);
+  if (cached) return res.json(cached);
+
   const site = await db.collection("siteConfig").findOne({ _id: "site" });
+  if (site && site.logoAssetId) {
+    try {
+      if (ObjectId.isValid(site.logoAssetId)) {
+        const asset = await db.collection("assets").findOne({ _id: new ObjectId(site.logoAssetId) });
+        if (asset && asset.url) {
+          site.logoUrl = asset.url.startsWith("http")
+            ? asset.url
+            : `${resolveBaseUrl(req)}${asset.url.startsWith("/") ? "" : "/"}${asset.url}`;
+        }
+      }
+    } catch (e) {
+      console.error("Error populating site logo:", e);
+    }
+  }
+  
+  if (site) apiCache.set(cacheKey, site);
   res.json(site || {});
 });
 
@@ -404,6 +481,7 @@ app.post("/api/site", authMiddleware, async (req, res) => {
       .collection("siteConfig")
       .updateOne({ _id: "site" }, { $set: update }, { upsert: true });
 
+    apiCache.del("site_config");
     res.json({ success: true });
   } catch (err) {
     console.error("Error saving site config:", err);
@@ -413,6 +491,10 @@ app.post("/api/site", authMiddleware, async (req, res) => {
 
 app.get("/api/pages", async (req, res) => {
   const user = getRequestUserOptional(req);
+  const cacheKey = `pages_list_${user ? "admin" : "public"}`;
+  const cached = apiCache.get(cacheKey);
+  if (cached && !user) return res.json(cached); // Only cache public list for now to keep it simple
+
   const query = user
     ? {}
     : { $or: [{ pageStatus: "published" }, { pageStatus: { $exists: false } }] };
@@ -421,11 +503,21 @@ app.get("/api/pages", async (req, res) => {
     .find(query)
     .sort({ updatedAt: -1 })
     .toArray();
+  
+  for (const page of pages) {
+    await populatePageOgImage(req, page);
+  }
+  
+  if (!user) apiCache.set(cacheKey, pages);
   res.json(pages);
 });
 
 app.get("/api/pages/:slug", async (req, res) => {
   const user = getRequestUserOptional(req);
+  const cacheKey = `page_slug_${req.params.slug}_${user ? "admin" : "public"}`;
+  const cached = apiCache.get(cacheKey);
+  if (cached && !user) return res.json(cached);
+
   const query = user
     ? { slug: req.params.slug }
     : {
@@ -433,6 +525,11 @@ app.get("/api/pages/:slug", async (req, res) => {
         $or: [{ pageStatus: "published" }, { pageStatus: { $exists: false } }],
       };
   const page = await db.collection("pages").findOne(query);
+  if (page) {
+    await populatePageOgImage(req, page);
+  }
+  
+  if (page && !user) apiCache.set(cacheKey, page);
   res.json(page || {});
 });
 
@@ -440,6 +537,10 @@ app.post("/api/pages", authMiddleware, async (req, res) => {
   const pageStatus = req.body?.pageStatus === "published" ? "published" : "draft";
   const page = { ...req.body, pageStatus, createdAt: new Date(), updatedAt: new Date() };
   const inserted = await db.collection("pages").insertOne(page);
+  
+  apiCache.clearByPrefix("pages_list");
+  apiCache.clearByPrefix("page_slug_");
+  
   res.json({ ...page, _id: inserted.insertedId });
 });
 
@@ -458,6 +559,10 @@ app.put("/api/pages/:id", authMiddleware, async (req, res) => {
       { _id: new ObjectId(id) },
       { $set: { ...updateData, updatedAt: new Date() } },
     );
+  
+  apiCache.clearByPrefix("pages_list");
+  apiCache.clearByPrefix("page_slug_");
+  
   res.json({ success: true });
 });
 
@@ -470,12 +575,20 @@ app.post("/api/pages/:id/homepage", authMiddleware, async (req, res) => {
       { _id: new ObjectId(id) },
       { $set: { isHomepage: true, pageStatus: "published", updatedAt: new Date() } },
     );
+  
+  apiCache.clearByPrefix("pages_list");
+  apiCache.clearByPrefix("page_slug_");
+  
   res.json({ success: true });
 });
 
 app.delete("/api/pages/:id", authMiddleware, async (req, res) => {
   const id = req.params.id;
   await db.collection("pages").deleteOne({ _id: new ObjectId(id) });
+  
+  apiCache.clearByPrefix("pages_list");
+  apiCache.clearByPrefix("page_slug_");
+  
   res.json({ success: true });
 });
 
@@ -491,6 +604,9 @@ app.get("/api/products", async (req, res) => {
 app.post("/api/products", authMiddleware, async (req, res) => {
   const product = { ...req.body, createdAt: new Date(), updatedAt: new Date() };
   const inserted = await db.collection("products").insertOne(product);
+  
+  apiCache.del("ecommerce_products");
+  
   res.json({ ...product, _id: inserted.insertedId });
 });
 
@@ -503,12 +619,18 @@ app.put("/api/products/:id", authMiddleware, async (req, res) => {
       { _id: new ObjectId(id) },
       { $set: { ...updateData, updatedAt: new Date() } },
     );
+  
+  apiCache.del("ecommerce_products");
+  
   res.json({ success: true });
 });
 
 app.delete("/api/products/:id", authMiddleware, async (req, res) => {
   const id = req.params.id;
   await db.collection("products").deleteOne({ _id: new ObjectId(id) });
+  
+  apiCache.del("ecommerce_products");
+  
   res.json({ success: true });
 });
 
@@ -530,6 +652,10 @@ app.post("/api/ecommerce/config", authMiddleware, requireAdmin, async (req, res)
 });
 
 app.get("/api/ecommerce/products", async (req, res) => {
+  const cacheKey = "ecommerce_products";
+  const cached = apiCache.get(cacheKey);
+  if (cached) return res.json(cached);
+
   const products = await db.collection("products").find().sort({ updatedAt: -1 }).toArray();
   const now = new Date();
   const mapped = products
@@ -539,6 +665,8 @@ app.get("/api/ecommerce/products", async (req, res) => {
       ...p,
       finalPrice: calculateDiscountedPrice(p.price, p.ecommerce.discount, now),
     }));
+  
+  apiCache.set(cacheKey, mapped);
   res.json(mapped);
 });
 

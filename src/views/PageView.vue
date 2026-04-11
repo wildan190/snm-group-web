@@ -28,7 +28,7 @@ async function loadPage(): Promise<void> {
       return;
     }
     page.value = res.data;
-    applySeoFromPage(page.value, siteStore.site, route.fullPath);
+    applySeoFromPage(page.value, siteStore.site, route.fullPath, siteStore.site.logoUrl);
   } catch (err) {
     console.warn("Unable to load page", err);
     page.value = null;

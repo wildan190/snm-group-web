@@ -30,7 +30,7 @@ async function loadHomePage(): Promise<void> {
       return;
     }
     homePage.value = found;
-    applySeoFromPage(found, siteStore.site, "/");
+    applySeoFromPage(found, siteStore.site, "/", siteStore.site.logoUrl);
   } catch (err) {
     console.warn("Unable to load homepage", err);
     router.push("/cms/login");

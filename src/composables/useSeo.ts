@@ -150,10 +150,19 @@ export function applySeo(meta: SeoMeta) {
   upsertMetaTag("name", "twitter:card", meta.ogImage ? "summary_large_image" : "summary");
   upsertMetaTag("name", "twitter:title", meta.ogTitle);
   upsertMetaTag("name", "twitter:description", meta.ogDescription);
+  
   if (meta.ogImage) {
     upsertMetaTag("property", "og:image", meta.ogImage);
     upsertMetaTag("name", "twitter:image", meta.ogImage);
+  } else {
+    // If no specific image, we could potentially remove the tag or use a site-wide placeholder.
+    // However, applySeoFromPage will now ensure a fallback exists.
+    const existingOg = document.head.querySelector("meta[property='og:image']");
+    const existingTw = document.head.querySelector("meta[name='twitter:image']");
+    if (existingOg) existingOg.remove();
+    if (existingTw) existingTw.remove();
   }
+  
   upsertCanonical(meta.canonical);
   upsertJsonLd(meta.schema);
 }
@@ -162,13 +171,17 @@ export function applySeoFromPage(
   page: PageData,
   site: SiteLike,
   pathName: string,
+  fallbackImage?: string,
 ) {
   const title = page.seoTitle?.trim() || page.title?.trim() || site.companyName || "Website";
   const description = page.seoDescription?.trim() || site.description || "";
   const canonical = toAbsoluteUrl(page.canonicalUrl) || new URL(pathName, window.location.origin).toString();
   const ogTitle = page.ogTitle?.trim() || title;
   const ogDescription = page.ogDescription?.trim() || description;
-  const ogImage = toAbsoluteUrl(page.ogImageUrl);
+  
+  // page.ogImageUrl is now populated as absolute URL by the backend if ogImageAssetId is set
+  let ogImage = toAbsoluteUrl(page.ogImageUrl) || toAbsoluteUrl(fallbackImage);
+  
   const schema = buildSchema(page, site, canonical, ogImage);
 
   applySeo({

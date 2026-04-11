@@ -20,6 +20,7 @@ type SiteConfig = {
   navbar: SiteLink[]
   footer: SiteLink[]
   description: string
+  logoUrl?: string
 }
 
 export const useSiteStore = defineStore('site', () => {
@@ -37,9 +38,18 @@ export const useSiteStore = defineStore('site', () => {
     navbar: [],
     footer: [],
     description: '',
+    logoUrl: '',
   }
 
-  const site = ref<SiteConfig>({ ...defaultSite })
+  // Load from localStorage immediately for instant feel
+  const cachedSite = localStorage.getItem('site_config')
+  const initialSite = cachedSite ? JSON.parse(cachedSite) : { ...defaultSite }
+  const site = ref<SiteConfig>(initialSite)
+
+  // Apply theme vars immediately if we have cached data
+  if (cachedSite) {
+    applyThemeVars(initialSite)
+  }
 
   async function loadSite() {
     try {
@@ -53,6 +63,7 @@ export const useSiteStore = defineStore('site', () => {
           navbar: Array.isArray(res.data.navbar) ? res.data.navbar : site.value.navbar,
           footer: Array.isArray(res.data.footer) ? res.data.footer : site.value.footer,
         }
+        localStorage.setItem('site_config', JSON.stringify(site.value))
       }
     } catch (err) {
       console.warn('Unable to load site config', err)
