@@ -6,7 +6,7 @@
         <div class="breadcrumbs-content">
           <h1 class="page-title">{{ page.title }}</h1>
           <ul class="breadcrumb-nav">
-            <li><router-link to="/">Home</router-link></li>
+            <li><a href="/">Home</a></li>
             <li>{{ page.title }}</li>
           </ul>
         </div>
@@ -162,9 +162,9 @@
               <div class="product-info">
                 <h4>{{ product.name }}</h4>
                 <p class="product-price">Rp {{ product.price?.toLocaleString('id-ID') }}</p>
-                <router-link :to="'/shop/product/' + product._id" class="btn btn-primary" style="font-size: 13px; padding: 10px 20px;">
+                <a :href="'/shop/product/' + product._id" class="btn btn-primary" style="font-size: 13px; padding: 10px 20px;">
                   Lihat Detail
-                </router-link>
+                </a>
               </div>
             </div>
           </div>

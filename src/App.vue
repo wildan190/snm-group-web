@@ -6,24 +6,25 @@
       :class="{ sticky: isScrolled || isShopRoute, 'force-solid': isShopRoute }"
     >
       <div class="header-container">
-        <router-link to="/" class="brand">
+        <a href="/" class="brand">
           <img v-if="logoUrl" :src="logoUrl" :alt="site.companyName" class="site-logo" />
           <span class="site-title">{{ site.companyName || 'SNM Group' }}</span>
-        </router-link>
+        </a>
 
         <button class="mobile-nav-toggle" type="button" @click="isMobileNavOpen = true">
           <Icon icon="lucide:menu" width="20" />
         </button>
 
         <nav class="site-nav">
-          <router-link
+          <a
             v-for="item in filteredNavbar"
             :key="item.link"
-            :to="item.link"
+            :href="item.link"
             class="nav-link"
+            :class="{ 'router-link-active': isActive(item.link) }"
           >
             {{ item.label }}
-          </router-link>
+          </a>
         </nav>
       </div>
 
@@ -41,15 +42,16 @@
           </button>
         </div>
         <nav class="mobile-nav-list">
-          <router-link
+          <a
             v-for="item in filteredNavbar"
             :key="`m-${item.link}`"
-            :to="item.link"
+            :href="item.link"
             class="mobile-nav-link"
+            :class="{ 'router-link-active': isActive(item.link) }"
             @click="isMobileNavOpen = false"
           >
             {{ item.label }}
-          </router-link>
+          </a>
         </nav>
       </aside>
     </header>
@@ -204,6 +206,14 @@ watch(
 
 function handleScroll() {
   isScrolled.value = window.scrollY > 40;
+}
+
+function isActive(link: string) {
+  if (!link) return false;
+  const currentPath = route.path;
+  if (link === '/') return currentPath === '/';
+  if (link.startsWith('http')) return false; // External
+  return currentPath.startsWith(link);
 }
 
 onMounted(() => {

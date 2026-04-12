@@ -41,8 +41,8 @@
             <button class="btn-primary" :disabled="stock <= 0" @click="addCurrentToCart">
               {{ stock > 0 ? "Tambah ke Keranjang" : "Stok Habis" }}
             </button>
-            <router-link class="btn btn-secondary" to="/shop/cart">Lihat Keranjang</router-link>
-            <router-link class="btn btn-ghost" to="/shop">Lanjut Belanja</router-link>
+            <a class="btn btn-secondary" href="/shop/cart">Lihat Keranjang</a>
+            <a class="btn btn-ghost" href="/shop">Lanjut Belanja</a>
           </div>
         </div>
       </div>
@@ -70,7 +70,7 @@
       <div class="card empty-card">
         <h3>Produk tidak ditemukan</h3>
         <p>Produk mungkin sudah tidak dijual atau URL yang dibuka tidak valid.</p>
-        <router-link class="btn-primary" to="/shop">Kembali ke Shop</router-link>
+        <a class="btn-primary" href="/shop">Kembali ke Shop</a>
       </div>
     </div>
   </section>

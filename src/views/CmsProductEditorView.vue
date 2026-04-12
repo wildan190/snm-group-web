@@ -5,7 +5,10 @@
         <h1>{{ isCreateMode ? "Buat Produk Baru" : "Edit Produk" }}</h1>
         <p class="text-sm text-slate-500">Editor produk terpisah dari daftar produk.</p>
       </div>
-      <router-link to="/cms/products" class="btn-ghost">Kembali ke Daftar</router-link>
+      <router-link to="/cms/products" class="btn btn-ghost">
+        <Icon icon="lucide:arrow-left" class="mr-2" />
+        Kembali ke Daftar
+      </router-link>
     </div>
 
     <div class="editor-card card p-8">
@@ -53,7 +56,7 @@
       </div>
 
       <div class="mt-8 flex justify-end gap-4">
-        <router-link to="/cms/products" class="btn-ghost">Batal</router-link>
+        <router-link to="/cms/products" class="btn btn-ghost">Batal</router-link>
         <button class="btn-primary px-10" @click="saveProduct">
           <Icon icon="lucide:save" class="mr-2" />
           Simpan Produk

@@ -20,10 +20,10 @@
           </select>
           <label><input type="checkbox" v-model="onlyDiscount" /> Diskon</label>
           <label><input type="checkbox" v-model="onlyInStock" /> In stock</label>
-          <router-link class="cart-icon-btn" to="/shop/cart" aria-label="Buka keranjang">
+          <a class="cart-icon-btn" href="/shop/cart" aria-label="Buka keranjang">
             <span class="cart-emoji">🛒</span>
             <span v-if="cartCount" class="cart-badge">{{ cartCount }}</span>
-          </router-link>
+          </a>
         </div>
 
         <div class="highlight-carousel card" v-if="carouselSlides.length">
@@ -57,11 +57,11 @@
 
         <div class="products-grid">
           <div v-for="p in displayedProducts" :key="p._id" class="product-card">
-            <router-link class="thumb-link" :to="`/shop/product/${p._id}`">
+            <a class="thumb-link" :href="`/shop/product/${p._id}`">
               <img v-if="p.imageAssetId" :src="assetUrl(p.imageAssetId)" :alt="p.name" class="product-thumb" />
-            </router-link>
+            </a>
             <div class="product-info">
-              <router-link class="product-name" :to="`/shop/product/${p._id}`">{{ p.name }}</router-link>
+              <a class="product-name" :href="`/shop/product/${p._id}`">{{ p.name }}</a>
               <p class="product-price">Rp {{ Number(p.finalPrice || p.price || 0).toLocaleString("id-ID") }}</p>
               <small class="product-stock">Stock: {{ p.ecommerce?.stock || 0 }}</small>
               <div v-if="Array.isArray(p.ecommerce?.variants) && p.ecommerce.variants.length" class="variant-picker">
@@ -73,7 +73,7 @@
                 </label>
               </div>
               <div class="product-actions">
-                <router-link class="btn btn-ghost" :to="`/shop/product/${p._id}`">Detail</router-link>
+                <a class="btn btn-ghost" :href="`/shop/product/${p._id}`">Detail</a>
                 <button class="btn-primary" @click="addProductToCart(p)">+ Cart</button>
               </div>
             </div>

@@ -5,7 +5,10 @@
         <h1>{{ isCreateMode ? "Create New Page" : "Edit Page" }}</h1>
         <p class="text-sm text-slate-500">Editor halaman terpisah dari daftar halaman.</p>
       </div>
-      <router-link to="/cms/pages" class="btn-ghost">Kembali ke Daftar</router-link>
+      <router-link to="/cms/pages" class="btn btn-ghost">
+        <Icon icon="lucide:arrow-left" class="mr-2" />
+        Kembali ke Daftar
+      </router-link>
     </div>
 
     <div class="editor-content">

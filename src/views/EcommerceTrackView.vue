@@ -7,7 +7,7 @@
             <h1 class="page-title">Tracking Pembelian</h1>
             <p class="subtle">Masukkan ID order untuk melihat status pembayaran dan progres pesanan.</p>
           </div>
-          <router-link class="btn-ghost" to="/shop">Kembali ke Shop</router-link>
+          <a class="btn-ghost" href="/shop">Kembali ke Shop</a>
         </div>
         <div class="track-form card-soft">
           <input v-model="inputOrderId" placeholder="Masukkan Order ID (contoh: SNM-...)" @keyup.enter="track" />

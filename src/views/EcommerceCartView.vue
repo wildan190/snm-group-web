@@ -7,12 +7,12 @@
             <h1 class="page-title">Keranjang Belanja</h1>
             <p class="muted">Periksa item dan lanjutkan checkout.</p>
           </div>
-          <router-link class="btn-ghost" to="/shop">Lanjut Belanja</router-link>
+          <a class="btn-ghost" href="/shop">Lanjut Belanja</a>
         </div>
 
         <div v-if="!cart.length" class="empty-cart">
           <p>Keranjang masih kosong.</p>
-          <router-link class="btn-primary" to="/shop">Belanja Sekarang</router-link>
+          <a class="btn-primary" href="/shop">Belanja Sekarang</a>
         </div>
 
         <template v-else>
