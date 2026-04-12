@@ -38,9 +38,39 @@
   background-color: transparent !important;
 }
 
-.page-renderer.is-nested .container {
+.page-renderer.is-nested .container,
+.page-renderer.is-preview .container {
   padding: 0 1.5rem;
   max-width: none;
+}
+
+/* === Preview Mode Specifics === */
+.page-renderer.is-preview .section {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
+.page-renderer.is-preview .hero-area {
+  min-height: 400px;
+  max-height: 500px;
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
+.page-renderer.is-preview .hero-title {
+  font-size: 2rem;
+}
+
+.page-renderer.is-preview .hero-inner {
+  padding: 2rem 0;
+}
+
+.page-renderer.is-preview .hero-overlay {
+  background: rgba(8, 24, 40, 0.7);
+}
+
+.page-renderer.is-preview .block-wrapper {
+  background-color: transparent !important;
 }
 
 /* Full-bleed blocks (do not apply landing page side gutters) */

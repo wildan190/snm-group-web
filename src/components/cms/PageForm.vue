@@ -246,6 +246,16 @@
                 <button
                   type="button"
                   class="btn-icon-xs"
+                  :class="{ 'active-premium': getBlockMode(block) === 'preview' }"
+                  :title="getBlockMode(block) === 'preview' ? 'Sembunyikan Preview' : 'Tampilkan Preview'"
+                  @click="toggleBlockMode(block)"
+                >
+                  <Icon :icon="getBlockMode(block) === 'preview' ? 'lucide:eye-off' : 'lucide:eye'" width="16" />
+                </button>
+
+                <button
+                  type="button"
+                  class="btn-icon-xs"
                   :title="isBlockCollapsed(block) ? 'Expand' : 'Collapse'"
                   @click="toggleBlockCollapsed(block)"
                 >
@@ -263,8 +273,12 @@
             </div>
 
             <div v-show="!isBlockCollapsed(block)" class="block-card-body">
+              <div v-if="getBlockMode(block) === 'preview'" class="block-live-preview container-preview fade-in">
+                <CmsContentRenderer :blocks="[block]" :is-preview="true" />
+              </div>
+
               <!-- Hero Block -->
-              <div v-if="block.type === 'hero'" class="grid gap-6">
+              <div v-if="getBlockMode(block) === 'edit' && block.type === 'hero'" class="grid gap-6">
                 <div class="form-field">
                   <label>Layout Hero</label>
                   <div class="layout-picker">
@@ -365,7 +379,7 @@
               </div>
 
               <!-- Text Block -->
-              <div v-if="block.type === 'text'" class="grid gap-5">
+              <div v-if="getBlockMode(block) === 'edit' && block.type === 'text'" class="grid gap-5">
                 <div class="form-field">
                   <label>Judul Seksi</label>
                   <input v-model="block.title" placeholder="Judul artikel..." />
@@ -377,7 +391,7 @@
               </div>
 
               <!-- Image Block -->
-              <div v-if="block.type === 'image'" class="grid gap-5">
+              <div v-if="getBlockMode(block) === 'edit' && block.type === 'image'" class="grid gap-5">
                 <div class="asset-selector-premium">
                   <div v-if="block.imageAssetId" class="image-preview-premium">
                     <img
@@ -402,7 +416,7 @@
               </div>
 
               <!-- Columns Block -->
-              <div v-if="block.type === 'columns'" class="grid gap-6">
+              <div v-if="getBlockMode(block) === 'edit' && block.type === 'columns'" class="grid gap-6">
                 <div class="columns-management">
                   <div 
                     v-for="(col, cIdx) in block.columns" 
@@ -504,7 +518,7 @@
               </div>
 
               <!-- Gallery Block -->
-              <div v-if="block.type === 'gallery'" class="grid gap-5">
+              <div v-if="getBlockMode(block) === 'edit' && block.type === 'gallery'" class="grid gap-5">
                 <div class="form-field">
                   <label>Judul Galeri</label>
                   <input v-model="block.title" />
@@ -545,7 +559,7 @@
               </div>
 
               <!-- Product Block -->
-              <div v-if="block.type === 'product'" class="grid gap-5">
+              <div v-if="getBlockMode(block) === 'edit' && block.type === 'product'" class="grid gap-5">
                 <div class="form-field">
                   <label>Judul Seksi Produk</label>
                   <input v-model="block.title" />
@@ -586,7 +600,7 @@
               </div>
 
               <!-- Button Block -->
-              <div v-if="block.type === 'btn'" class="grid grid-2 gap-5">
+              <div v-if="getBlockMode(block) === 'edit' && block.type === 'btn'" class="grid grid-2 gap-5">
                 <div class="form-field col-span-2">
                   <label>Judul Seksi (Opsional)</label>
                   <input v-model="block.title" />
@@ -602,7 +616,7 @@
               </div>
 
               <!-- FAQ Block -->
-              <div v-if="block.type === 'faq'" class="grid gap-5">
+              <div v-if="getBlockMode(block) === 'edit' && block.type === 'faq'" class="grid gap-5">
                 <div class="form-field">
                   <label>Judul FAQ</label>
                   <input v-model="block.title" />
@@ -640,7 +654,7 @@
               </div>
 
               <!-- Form Block -->
-              <div v-if="block.type === 'form'" class="grid gap-5">
+              <div v-if="getBlockMode(block) === 'edit' && block.type === 'form'" class="grid gap-5">
                 <div class="form-field">
                   <label>Judul Seksi Kontak</label>
                   <input v-model="block.title" placeholder="Hubungi Kami" />
@@ -657,7 +671,7 @@
               </div>
 
               <!-- Carousel Block -->
-              <div v-if="block.type === 'carousel'" class="grid gap-5">
+              <div v-if="getBlockMode(block) === 'edit' && block.type === 'carousel'" class="grid gap-5">
                 <div class="form-field">
                   <label>Judul Seksi Carousel (Opsional)</label>
                   <input v-model="block.title" placeholder="Layanan Unggulan" />
@@ -727,7 +741,7 @@
               </div>
 
               <!-- CTA Block -->
-              <div v-if="block.type === 'cta-section'" class="grid gap-5">
+              <div v-if="getBlockMode(block) === 'edit' && block.type === 'cta-section'" class="grid gap-5">
                 <div class="grid grid-2 gap-6">
                   <div class="form-field">
                     <label>Judul CTA</label>
@@ -764,7 +778,7 @@
               </div>
 
               <!-- Split Content Block -->
-              <div v-if="block.type === 'split-content'" class="grid gap-6">
+              <div v-if="getBlockMode(block) === 'edit' && block.type === 'split-content'" class="grid gap-6">
                 <div class="form-field">
                   <label>Layout Konten</label>
                   <div class="layout-picker">
@@ -819,7 +833,7 @@
               </div>
 
               <!-- Maps Block -->
-              <div v-if="block.type === 'maps'" class="grid gap-5">
+              <div v-if="getBlockMode(block) === 'edit' && block.type === 'maps'" class="grid gap-5">
                 <div class="form-field">
                   <label>Judul Seksi Peta (Opsional)</label>
                   <input v-model="block.title" placeholder="Lokasi Kami" />
@@ -844,7 +858,7 @@
               </div>
 
               <!-- WhatsApp Floating Block -->
-              <div v-if="block.type === 'whatsapp-float'" class="grid gap-5">
+              <div v-if="getBlockMode(block) === 'edit' && block.type === 'whatsapp-float'" class="grid gap-5">
                 <div class="form-field">
                   <label>Nomor WhatsApp</label>
                   <input v-model="block.phoneNumber" placeholder="62812xxxxxxx" />
@@ -887,6 +901,7 @@ import { Icon } from "@iconify/vue";
 import { QuillEditor } from "@vueup/vue-quill";
 import "@vueup/vue-quill/dist/vue-quill.snow.css";
 import type { PageData, PageBlock } from "@/types/pageTypes";
+import CmsContentRenderer from "@/components/cms/CmsContentRenderer.vue";
 
 interface Props {
   current: PageData;
@@ -931,7 +946,19 @@ const emit = defineEmits<{
 
 const activeTab = ref<"settings" | "content">("content");
 const collapsedBlocks = ref<Record<string, boolean>>({});
+const blockModes = ref<Record<string, 'edit' | 'preview'>>({});
 const draggingIndex = ref<number | null>(null);
+
+function getBlockMode(block: PageBlock) {
+  const key = getBlockKey(block);
+  return blockModes.value[key] || 'edit';
+}
+
+function toggleBlockMode(block: PageBlock) {
+  const key = getBlockKey(block);
+  const currentMode = getBlockMode(block);
+  blockModes.value[key] = currentMode === 'edit' ? 'preview' : 'edit';
+}
 
 const blockTypes = [
   { value: "hero", label: "Hero", icon: "lucide:layout-template" },

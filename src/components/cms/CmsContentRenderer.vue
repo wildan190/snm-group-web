@@ -1,5 +1,5 @@
 <template>
-  <div v-if="page || blocks" class="page-renderer" :class="{ 'is-nested': !!blocks }">
+  <div v-if="page || blocks" class="page-renderer" :class="{ 'is-nested': !!blocks, 'is-preview': isPreview }">
     <!-- ===== AUTOMATIC BREADCRUMBS ===== -->
     <section v-if="showBreadcrumbs" class="breadcrumbs">
       <div class="container text-center">
@@ -100,7 +100,7 @@
             <div v-for="(col, i) in block.columns" :key="i" class="single-service">
               <h4 class="text-title" v-if="col.columnTitle">{{ col.columnTitle }}</h4>
               <div v-if="col.blocks && col.blocks.length > 0" class="nested-column-blocks">
-                <CmsContentRenderer :blocks="col.blocks" />
+                <CmsContentRenderer :blocks="col.blocks" :is-preview="isPreview" :assets-data="assetsData" :products-data="productsData" />
               </div>
               <!-- Fallback for legacy columns -->
               <div v-else class="legacy-column-content">
@@ -377,9 +377,14 @@ const route = useRoute();
 interface Props {
   page?: any;
   blocks?: PageBlock[];
+  isPreview?: boolean;
+  assetsData?: any[];
+  productsData?: any[];
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  isPreview: false
+});
 
 const computedBlocks = computed(() => {
   return props.blocks || props.page?.blocks || [];
@@ -399,8 +404,8 @@ const showBreadcrumbs = computed(() => {
   return true;
 });
 
-const assets = ref<any[]>([]);
-const products = ref<any[]>([]);
+const assets = ref<any[]>(props.assetsData || []);
+const products = ref<any[]>(props.productsData || []);
 const openedFaqs = ref<Record<string | number, number[]>>({});
 const formStatus = ref<Record<string | number, boolean>>({});
 const isSubmitting = ref<Record<string | number, boolean>>({});
@@ -442,6 +447,7 @@ function setCarouselSlide(idx: any, slideIdx: number) {
 }
 
 async function loadAssets() {
+  if (props.assetsData && props.assetsData.length > 0) return;
   try {
     const res = await api.get("/assets");
     assets.value = res.data;
@@ -451,6 +457,7 @@ async function loadAssets() {
 }
 
 async function loadProducts() {
+  if (props.productsData && props.productsData.length > 0) return;
   try {
     const res = await api.get("/products");
     products.value = res.data;
