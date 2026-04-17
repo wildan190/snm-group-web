@@ -1,7 +1,16 @@
 <template>
   <div id="app">
+
+    <!-- ===== GLOBAL LOADING OVERLAY (public pages only) ===== -->
+    <transition name="fade-overlay">
+      <div v-if="!isCms && siteIsLoading" class="page-loading-overlay" aria-label="Loading">
+        <div class="page-spinner">
+          <span class="spinner-ring"></span>
+        </div>
+      </div>
+    </transition>
     <header
-      v-if="!isCms"
+      v-if="!isCms && !siteIsLoading"
       class="site-header"
       :class="{ sticky: isScrolled || isShopRoute, 'force-solid': isShopRoute }"
     >
@@ -61,7 +70,7 @@
     </main>
 
     <!-- Global Floating WhatsApp Button (public pages) -->
-    <div v-if="!isCms && whatsappFloat" class="wa-float-wrapper">
+    <div v-if="!isCms && !siteIsLoading && whatsappFloat" class="wa-float-wrapper">
       <a
         class="wa-float-btn"
         :href="getWhatsappHref(whatsappFloat.phoneNumber, whatsappFloat.message)"
@@ -73,7 +82,7 @@
       </a>
     </div>
 
-    <footer v-if="!isCms" class="site-footer">
+    <footer v-if="!isCms && !siteIsLoading" class="site-footer">
       <div class="footer-top">
         <div class="footer-container">
           <div class="footer-grid">
@@ -125,7 +134,7 @@ import { Icon } from "@iconify/vue";
 
 const route = useRoute();
 const siteStore = useSiteStore();
-const { site } = storeToRefs(siteStore);
+const { site, isLoading: siteIsLoading } = storeToRefs(siteStore);
 const assets = ref<any[]>([]);
 const isScrolled = ref(false);
 const isMobileNavOpen = ref(false);

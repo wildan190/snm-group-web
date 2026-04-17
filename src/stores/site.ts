@@ -24,6 +24,8 @@ type SiteConfig = {
 }
 
 export const useSiteStore = defineStore('site', () => {
+  const isLoading = ref(true)
+
   const defaultSite: SiteConfig = {
     companyName: 'SNM Group',
     logoAssetId: '',
@@ -51,23 +53,44 @@ export const useSiteStore = defineStore('site', () => {
     applyThemeVars(initialSite)
   }
 
+  const MAX_RETRIES = 8
+  const BASE_DELAY_MS = 800
+
+  function isNetworkError(err: any): boolean {
+    return !err.response || err.code === 'ERR_NETWORK' || err.code === 'ECONNABORTED'
+  }
+
+  function sleep(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms))
+  }
+
   async function loadSite() {
-    try {
-      const res = await api.get('/site')
-      if (res.data && typeof res.data === 'object' && Object.keys(res.data).length > 0) {
-        site.value = {
-          ...defaultSite,
-          ...res.data,
-          // Ensure arrays are always arrays
-          socials: Array.isArray(res.data.socials) ? res.data.socials : site.value.socials,
-          navbar: Array.isArray(res.data.navbar) ? res.data.navbar : site.value.navbar,
-          footer: Array.isArray(res.data.footer) ? res.data.footer : site.value.footer,
+    isLoading.value = true
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      try {
+        const res = await api.get('/site')
+        if (res.data && typeof res.data === 'object' && Object.keys(res.data).length > 0) {
+          site.value = {
+            ...defaultSite,
+            ...res.data,
+            socials: Array.isArray(res.data.socials) ? res.data.socials : site.value.socials,
+            navbar: Array.isArray(res.data.navbar) ? res.data.navbar : site.value.navbar,
+            footer: Array.isArray(res.data.footer) ? res.data.footer : site.value.footer,
+          }
+          localStorage.setItem('site_config', JSON.stringify(site.value))
         }
-        localStorage.setItem('site_config', JSON.stringify(site.value))
+        break // success
+      } catch (err: any) {
+        if (isNetworkError(err) && attempt < MAX_RETRIES - 1) {
+          const delay = Math.min(BASE_DELAY_MS * Math.pow(1.5, attempt), 4000)
+          await sleep(delay)
+          continue
+        }
+        console.warn('Unable to load site config', err)
+        break
       }
-    } catch (err) {
-      console.warn('Unable to load site config', err)
     }
+    isLoading.value = false
   }
 
   async function saveSite(payload: SiteConfig) {
@@ -104,5 +127,5 @@ export const useSiteStore = defineStore('site', () => {
     { deep: true },
   )
 
-  return { site, loadSite, saveSite }
+  return { site, isLoading, loadSite, saveSite }
 })
