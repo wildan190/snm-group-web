@@ -113,6 +113,35 @@ export type PageBlock =
       type: "custom-code";
       code: string;
       id: number;
+    }
+  | {
+      type: "cards";
+      title?: string;
+      description?: string;
+      items: {
+        title: string;
+        content: string;
+        icon?: string;
+        imageAssetId?: string;
+        ctaText?: string;
+        ctaUrl?: string;
+      }[];
+      id: number;
+    }
+  | {
+      type: "pricing-cards";
+      title?: string;
+      description?: string;
+      plans: {
+        name: string;
+        price: string;
+        period: string;
+        features: string[];
+        isFeatured?: boolean;
+        ctaText: string;
+        ctaUrl: string;
+      }[];
+      id: number;
     };
 
 export interface PageData {

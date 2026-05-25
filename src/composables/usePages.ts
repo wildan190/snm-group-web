@@ -20,7 +20,7 @@ export function usePages() {
     blocks: [],
   });
   const newBlockType = ref<
-    "hero" | "text" | "image" | "columns" | "gallery" | "product" | "btn" | "faq" | "form" | "carousel" | "cta-section" | "maps" | "split-content" | "split-content-left" | "split-content-right" | "whatsapp-float" | "custom-code"
+    "hero" | "text" | "image" | "columns" | "gallery" | "product" | "btn" | "faq" | "form" | "carousel" | "cta-section" | "maps" | "split-content" | "split-content-left" | "split-content-right" | "whatsapp-float" | "custom-code" | "cards" | "pricing-cards"
   >("hero");
 
   async function loadPages(): Promise<void> {
@@ -374,6 +374,44 @@ export function usePages() {
     </div>
   </div>
 </section>`,
+        id: Date.now(),
+      };
+    if (type === "cards")
+      return {
+        type: "cards",
+        title: "Layanan Kami",
+        description: "Kami menyediakan berbagai solusi untuk kebutuhan bisnis Anda.",
+        items: [
+          { title: "Brand Identity", content: "Desain identitas brand yang kuat.", icon: "lucide:brush" },
+          { title: "Digital Marketing", content: "Strategi pemasaran digital modern.", icon: "lucide:trending-up" },
+          { title: "Web Development", content: "Pengembangan website responsif.", icon: "lucide:code" },
+        ],
+        id: Date.now(),
+      };
+    if (type === "pricing-cards")
+      return {
+        type: "pricing-cards",
+        title: "Paket Layanan",
+        description: "Pilih paket yang sesuai dengan skala bisnis Anda.",
+        plans: [
+          {
+            name: "Starter",
+            price: "500.000",
+            period: "/bulan",
+            features: ["Fitur Dasar", "Support Email", "1 User"],
+            ctaText: "Pilih Paket",
+            ctaUrl: "#",
+          },
+          {
+            name: "Business",
+            price: "1.500.000",
+            period: "/bulan",
+            features: ["Semua Fitur Starter", "Priority Support", "5 Users", "Analytics"],
+            isFeatured: true,
+            ctaText: "Pilih Paket",
+            ctaUrl: "#",
+          },
+        ],
         id: Date.now(),
       };
     return {

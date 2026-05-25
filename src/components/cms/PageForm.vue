@@ -857,6 +857,109 @@
                 </div>
               </div>
 
+              <!-- Cards Block -->
+              <div v-if="getBlockMode(block) === 'edit' && block.type === 'cards'" class="grid gap-5">
+                <div class="form-field">
+                  <label>Judul Seksi</label>
+                  <input v-model="block.title" />
+                </div>
+                <div class="form-field">
+                  <label>Deskripsi Seksi</label>
+                  <textarea v-model="block.description"></textarea>
+                </div>
+                <div class="items-list border-t pt-4 mt-2">
+                  <div v-for="(item, idx) in block.items" :key="idx" class="card-item-editor p-4 bg-slate-50 rounded-lg mb-4 border">
+                    <div class="flex justify-between items-center mb-3">
+                      <h5 class="font-bold">Card #{{ idx + 1 }}</h5>
+                      <button class="text-red-500 hover:text-red-700" type="button" @click="block.items.splice(idx, 1)">
+                        <Icon icon="lucide:trash-2" />
+                      </button>
+                    </div>
+                    <div class="grid grid-2 gap-4">
+                      <div class="form-field">
+                        <label>Judul Card</label>
+                        <input v-model="item.title" />
+                      </div>
+                      <div class="form-field">
+                        <label>Icon (Lucide Name)</label>
+                        <input v-model="item.icon" placeholder="lucide:sparkles" />
+                      </div>
+                      <div class="form-field col-span-2">
+                        <label>Konten</label>
+                        <textarea v-model="item.content" rows="2"></textarea>
+                      </div>
+                      <div class="form-field">
+                        <label>Teks CTA</label>
+                        <input v-model="item.ctaText" />
+                      </div>
+                      <div class="form-field">
+                        <label>Link CTA</label>
+                        <input v-model="item.ctaUrl" />
+                      </div>
+                    </div>
+                  </div>
+                  <button class="btn-secondary-dashed w-full" type="button" @click="block.items.push({ title: 'Baru', content: '', icon: 'lucide:box' })">
+                    <Icon icon="lucide:plus" class="mr-2" /> Tambah Card
+                  </button>
+                </div>
+              </div>
+
+              <!-- Pricing Cards Block -->
+              <div v-if="getBlockMode(block) === 'edit' && block.type === 'pricing-cards'" class="grid gap-5">
+                <div class="form-field">
+                  <label>Judul Seksi</label>
+                  <input v-model="block.title" />
+                </div>
+                <div class="form-field">
+                  <label>Deskripsi Seksi</label>
+                  <textarea v-model="block.description"></textarea>
+                </div>
+                <div class="plans-list border-t pt-4 mt-2">
+                  <div v-for="(plan, idx) in block.plans" :key="idx" class="plan-item-editor p-4 bg-blue-50 rounded-lg mb-4 border border-blue-200">
+                    <div class="flex justify-between items-center mb-3">
+                      <h5 class="font-bold text-blue-800">Paket #{{ idx + 1 }}</h5>
+                      <div class="flex items-center gap-4">
+                        <label class="flex items-center gap-2 text-sm cursor-pointer">
+                          <input type="checkbox" v-model="plan.isFeatured" /> Featured?
+                        </label>
+                        <button class="text-red-500 hover:text-red-700" type="button" @click="block.plans.splice(idx, 1)">
+                          <Icon icon="lucide:trash-2" />
+                        </button>
+                      </div>
+                    </div>
+                    <div class="grid grid-2 gap-4">
+                      <div class="form-field">
+                        <label>Nama Paket</label>
+                        <input v-model="plan.name" />
+                      </div>
+                      <div class="form-field">
+                        <label>Harga</label>
+                        <input v-model="plan.price" />
+                      </div>
+                      <div class="form-field">
+                        <label>Periode (ex: /bulan)</label>
+                        <input v-model="plan.period" />
+                      </div>
+                      <div class="form-field">
+                        <label>Teks Tombol</label>
+                        <input v-model="plan.ctaText" />
+                      </div>
+                      <div class="form-field col-span-2">
+                        <label>Fitur (Satu per baris)</label>
+                        <textarea 
+                          :value="plan.features.join('\n')" 
+                          @input="plan.features = ($event.target as HTMLTextAreaElement).value.split('\n').filter(f => f.trim())"
+                          rows="4"
+                        ></textarea>
+                      </div>
+                    </div>
+                  </div>
+                  <button class="btn-primary w-full" type="button" @click="block.plans.push({ name: 'Paket Baru', price: '0', period: '/bulan', features: [], ctaText: 'Beli Sekarang', ctaUrl: '#' })">
+                    <Icon icon="lucide:plus" class="mr-2" /> Tambah Paket
+                  </button>
+                </div>
+              </div>
+
               <!-- Custom Code Block -->
               <div v-if="getBlockMode(block) === 'edit' && block.type === 'custom-code'" class="grid gap-5">
                 <div class="form-field">
@@ -992,6 +1095,8 @@ const blockTypes = [
   { value: "carousel", label: "Carousel", icon: "lucide:layers" },
   { value: "cta-section", label: "CTA Section", icon: "lucide:megaphone" },
   { value: "maps", label: "Maps", icon: "lucide:map-pin" },
+  { value: "cards", label: "Cards", icon: "lucide:layout-grid" },
+  { value: "pricing-cards", label: "Paket Layanan", icon: "lucide:tags" },
   { value: "custom-code", label: "Custom Code", icon: "lucide:code-2" },
   { value: "split-content-left", label: "Left Align Content", icon: "lucide:panel-left" },
   { value: "split-content-right", label: "Right Align Content", icon: "lucide:panel-right" },

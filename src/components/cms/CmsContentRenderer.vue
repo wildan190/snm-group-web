@@ -358,6 +358,62 @@
 
       <!-- ===== CUSTOM CODE BLOCK ===== -->
       <div v-else-if="block.type === 'custom-code'" class="custom-code-wrapper" v-html="block.code"></div>
+
+      <!-- ===== CARDS BLOCK ===== -->
+      <section v-else-if="block.type === 'cards'" class="section cards-section">
+        <div class="container">
+          <div class="section-title text-center" v-if="block.title || block.description">
+            <h2 v-if="block.title">{{ block.title }}</h2>
+            <p v-if="block.description">{{ block.description }}</p>
+          </div>
+          <div class="row">
+            <div v-for="(item, i) in block.items" :key="i" class="col-lg-4 col-md-6 col-12 mb-4">
+              <div class="single-service wow fadeInUp" :data-wow-delay="`${0.2 * (i + 1)}s`" style="height: 100%">
+                <div class="main-icon" v-if="item.icon">
+                  <Icon :icon="item.icon" width="32" />
+                </div>
+                <h4 class="text-title">{{ item.title }}</h4>
+                <p>{{ item.content }}</p>
+                <div v-if="item.ctaText && item.ctaUrl" class="mt-4">
+                  <a :href="item.ctaUrl" class="btn btn-ghost btn-sm">
+                    {{ item.ctaText }} <Icon icon="lucide:arrow-right" class="ml-1" width="14" />
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== PRICING CARDS BLOCK ===== -->
+      <section v-else-if="block.type === 'pricing-cards'" class="section pricing-section bg-light">
+        <div class="container">
+          <div class="section-title text-center" v-if="block.title || block.description">
+            <h2 v-if="block.title">{{ block.title }}</h2>
+            <p v-if="block.description">{{ block.description }}</p>
+          </div>
+          <div class="row align-items-center justify-content-center">
+            <div v-for="(plan, i) in block.plans" :key="i" class="col-lg-4 col-md-6 col-12 mb-4">
+              <div class="single-table wow fadeInUp" :class="{ 'featured': plan.isFeatured }" :data-wow-delay="`${0.2 * (i + 1)}s`">
+                <div class="table-head">
+                  <h4 class="title">{{ plan.name }}</h4>
+                  <div class="price">
+                    <p class="amount">Rp {{ plan.price }}<span class="duration">{{ plan.period }}</span></p>
+                  </div>
+                </div>
+                <ul class="table-list">
+                  <li v-for="(feature, fIdx) in plan.features" :key="fIdx">
+                    <Icon icon="lucide:check" class="mr-2 text-primary" width="16" /> {{ feature }}
+                  </li>
+                </ul>
+                <div class="button">
+                  <a :href="plan.ctaUrl" class="btn" :class="plan.isFeatured ? 'btn-primary' : 'btn-alt'">{{ plan.ctaText }}</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   </div>
 </template>
