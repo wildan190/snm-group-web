@@ -206,6 +206,9 @@ function selectAsset(asset: Asset) {
   } else if (block.type === "gallery" && currentGalleryIndex.value !== null) {
     const image = block.images[currentGalleryIndex.value];
     if (image) image.assetId = asset._id;
+  } else if (block.type === "clients" && currentGalleryIndex.value !== null) {
+    const client = block.items[currentGalleryIndex.value];
+    if (client) client.imageAssetId = asset._id;
   } else if (block.type === "cta-section") block.backgroundImageAssetId = asset._id;
   else if (block.type === "carousel" && currentSlideIndex.value !== null) {
     const slide = block.slides[currentSlideIndex.value];

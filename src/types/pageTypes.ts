@@ -118,6 +118,7 @@ export type PageBlock =
       type: "cards";
       title?: string;
       description?: string;
+      variant?: "default" | "horizontal" | "minimal";
       items: {
         title: string;
         content: string;
@@ -132,6 +133,7 @@ export type PageBlock =
       type: "pricing-cards";
       title?: string;
       description?: string;
+      variant?: "default" | "modern" | "compact";
       plans: {
         name: string;
         price: string;
@@ -140,6 +142,18 @@ export type PageBlock =
         isFeatured?: boolean;
         ctaText: string;
         ctaUrl: string;
+      }[];
+      id: number;
+    }
+  | {
+      type: "clients";
+      title?: string;
+      description?: string;
+      variant?: "grid" | "marquee" | "minimal";
+      items: {
+        name: string;
+        imageAssetId: string;
+        link?: string;
       }[];
       id: number;
     };

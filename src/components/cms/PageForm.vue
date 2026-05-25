@@ -273,7 +273,7 @@
             </div>
 
             <div v-show="!isBlockCollapsed(block)" class="block-card-body">
-              <div v-if="getBlockMode(block) === 'preview'" class="block-live-preview container-preview fade-in">
+              <div v-if="getBlockMode(block) === 'preview'" class="block-live-preview fade-in" style="background: #f1f5f9; padding: 30px; border-radius: 0 0 12px 12px;">
                 <CmsContentRenderer :blocks="[block]" :is-preview="true" />
               </div>
 
@@ -859,9 +859,19 @@
 
               <!-- Cards Block -->
               <div v-if="getBlockMode(block) === 'edit' && block.type === 'cards'" class="grid gap-5">
-                <div class="form-field">
-                  <label>Judul Seksi</label>
-                  <input v-model="block.title" />
+                <div class="grid grid-2 gap-4">
+                  <div class="form-field">
+                    <label>Judul Seksi</label>
+                    <input v-model="block.title" />
+                  </div>
+                  <div class="form-field">
+                    <label>Style Kartu</label>
+                    <select v-model="block.variant" class="w-full">
+                      <option value="default">Default (Icon Top)</option>
+                      <option value="horizontal">Horizontal (Icon Left)</option>
+                      <option value="minimal">Minimal (Bordered)</option>
+                    </select>
+                  </div>
                 </div>
                 <div class="form-field">
                   <label>Deskripsi Seksi</label>
@@ -870,7 +880,7 @@
                 <div class="items-list border-t pt-4 mt-2">
                   <div v-for="(item, idx) in block.items" :key="idx" class="card-item-editor p-4 bg-slate-50 rounded-lg mb-4 border">
                     <div class="flex justify-between items-center mb-3">
-                      <h5 class="font-bold">Card #{{ idx + 1 }}</h5>
+                      <h5 class="font-bold text-slate-700">Card #{{ idx + 1 }}</h5>
                       <button class="text-red-500 hover:text-red-700" type="button" @click="block.items.splice(idx, 1)">
                         <Icon icon="lucide:trash-2" />
                       </button>
@@ -906,9 +916,19 @@
 
               <!-- Pricing Cards Block -->
               <div v-if="getBlockMode(block) === 'edit' && block.type === 'pricing-cards'" class="grid gap-5">
-                <div class="form-field">
-                  <label>Judul Seksi</label>
-                  <input v-model="block.title" />
+                <div class="grid grid-2 gap-4">
+                  <div class="form-field">
+                    <label>Judul Seksi</label>
+                    <input v-model="block.title" />
+                  </div>
+                  <div class="form-field">
+                    <label>Style Paket</label>
+                    <select v-model="block.variant" class="w-full">
+                      <option value="default">Classic (Vertical)</option>
+                      <option value="modern">Modern (Shadows)</option>
+                      <option value="compact">Compact (Horizontal)</option>
+                    </select>
+                  </div>
                 </div>
                 <div class="form-field">
                   <label>Deskripsi Seksi</label>
@@ -956,6 +976,63 @@
                   </div>
                   <button class="btn-primary w-full" type="button" @click="block.plans.push({ name: 'Paket Baru', price: '0', period: '/bulan', features: [], ctaText: 'Beli Sekarang', ctaUrl: '#' })">
                     <Icon icon="lucide:plus" class="mr-2" /> Tambah Paket
+                  </button>
+                </div>
+              </div>
+
+              <!-- Clients Block -->
+              <div v-if="getBlockMode(block) === 'edit' && block.type === 'clients'" class="grid gap-5">
+                <div class="grid grid-2 gap-4">
+                  <div class="form-field">
+                    <label>Judul Seksi</label>
+                    <input v-model="block.title" />
+                  </div>
+                  <div class="form-field">
+                    <label>Style Tampilan</label>
+                    <select v-model="block.variant" class="w-full">
+                      <option value="grid">Grid Logo (Static)</option>
+                      <option value="marquee">Marquee (Running)</option>
+                      <option value="minimal">Minimal List</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-field">
+                  <label>Deskripsi Seksi</label>
+                  <textarea v-model="block.description"></textarea>
+                </div>
+                <div class="clients-list border-t pt-4 mt-2">
+                  <div class="grid grid-2 gap-4">
+                    <div v-for="(client, cIdx) in block.items" :key="cIdx" class="client-item-editor p-4 bg-slate-50 rounded-lg border flex flex-col gap-3">
+                      <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-slate-500 uppercase">Client #{{ cIdx + 1 }}</span>
+                        <button class="text-red-500 hover:text-red-700" type="button" @click="block.items.splice(cIdx, 1)">
+                          <Icon icon="lucide:trash-2" />
+                        </button>
+                      </div>
+                      
+                      <div class="asset-selector-premium mini" @click="$emit('openGalleryPicker', index, cIdx)">
+                        <div v-if="client.imageAssetId" class="image-preview-mini">
+                          <img :src="getAssetUrl(client.imageAssetId)" />
+                          <Icon icon="lucide:refresh-cw" class="refresh-icon" />
+                        </div>
+                        <div v-else class="upload-placeholder-mini">
+                          <Icon icon="lucide:image-plus" />
+                          <span>Pilih Logo</span>
+                        </div>
+                      </div>
+
+                      <div class="form-field">
+                        <label class="text-[10px]">Nama Client</label>
+                        <input v-model="client.name" class="text-xs p-2" placeholder="Nama Perusahaan" />
+                      </div>
+                      <div class="form-field">
+                        <label class="text-[10px]">Link (Opsional)</label>
+                        <input v-model="client.link" class="text-xs p-2" placeholder="https://..." />
+                      </div>
+                    </div>
+                  </div>
+                  <button class="btn-secondary-dashed w-full mt-4" type="button" @click="block.items.push({ name: '', imageAssetId: '', link: '#' })">
+                    <Icon icon="lucide:plus" class="mr-2" /> Tambah Client
                   </button>
                 </div>
               </div>
@@ -1097,6 +1174,7 @@ const blockTypes = [
   { value: "maps", label: "Maps", icon: "lucide:map-pin" },
   { value: "cards", label: "Cards", icon: "lucide:layout-grid" },
   { value: "pricing-cards", label: "Paket Layanan", icon: "lucide:tags" },
+  { value: "clients", label: "Client Kami", icon: "lucide:users" },
   { value: "custom-code", label: "Custom Code", icon: "lucide:code-2" },
   { value: "split-content-left", label: "Left Align Content", icon: "lucide:panel-left" },
   { value: "split-content-right", label: "Right Align Content", icon: "lucide:panel-right" },

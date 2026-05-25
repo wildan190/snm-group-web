@@ -20,7 +20,7 @@ export function usePages() {
     blocks: [],
   });
   const newBlockType = ref<
-    "hero" | "text" | "image" | "columns" | "gallery" | "product" | "btn" | "faq" | "form" | "carousel" | "cta-section" | "maps" | "split-content" | "split-content-left" | "split-content-right" | "whatsapp-float" | "custom-code" | "cards" | "pricing-cards"
+    "hero" | "text" | "image" | "columns" | "gallery" | "product" | "btn" | "faq" | "form" | "carousel" | "cta-section" | "maps" | "split-content" | "split-content-left" | "split-content-right" | "whatsapp-float" | "custom-code" | "cards" | "pricing-cards" | "clients"
   >("hero");
 
   async function loadPages(): Promise<void> {
@@ -381,6 +381,7 @@ export function usePages() {
         type: "cards",
         title: "Layanan Kami",
         description: "Kami menyediakan berbagai solusi untuk kebutuhan bisnis Anda.",
+        variant: "default",
         items: [
           { title: "Brand Identity", content: "Desain identitas brand yang kuat.", icon: "lucide:brush" },
           { title: "Digital Marketing", content: "Strategi pemasaran digital modern.", icon: "lucide:trending-up" },
@@ -393,6 +394,7 @@ export function usePages() {
         type: "pricing-cards",
         title: "Paket Layanan",
         description: "Pilih paket yang sesuai dengan skala bisnis Anda.",
+        variant: "default",
         plans: [
           {
             name: "Starter",
@@ -411,6 +413,20 @@ export function usePages() {
             ctaText: "Pilih Paket",
             ctaUrl: "#",
           },
+        ],
+        id: Date.now(),
+      };
+    if (type === "clients")
+      return {
+        type: "clients",
+        title: "Client Kami",
+        description: "Kepercayaan Anda adalah prioritas kami. Berikut adalah beberapa mitra yang telah bekerja sama dengan kami.",
+        variant: "grid",
+        items: [
+          { name: "Client 1", imageAssetId: "", link: "#" },
+          { name: "Client 2", imageAssetId: "", link: "#" },
+          { name: "Client 3", imageAssetId: "", link: "#" },
+          { name: "Client 4", imageAssetId: "", link: "#" },
         ],
         id: Date.now(),
       };
