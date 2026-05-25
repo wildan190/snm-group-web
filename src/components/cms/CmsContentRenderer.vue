@@ -355,6 +355,9 @@
           </div>
         </div>
       </section>
+
+      <!-- ===== CUSTOM CODE BLOCK ===== -->
+      <div v-else-if="block.type === 'custom-code'" class="custom-code-wrapper" v-html="block.code"></div>
     </div>
   </div>
 </template>

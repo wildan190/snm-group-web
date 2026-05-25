@@ -20,7 +20,7 @@ export function usePages() {
     blocks: [],
   });
   const newBlockType = ref<
-    "hero" | "text" | "image" | "columns" | "gallery" | "product" | "btn" | "faq" | "form" | "carousel" | "cta-section" | "maps" | "split-content" | "split-content-left" | "split-content-right" | "whatsapp-float"
+    "hero" | "text" | "image" | "columns" | "gallery" | "product" | "btn" | "faq" | "form" | "carousel" | "cta-section" | "maps" | "split-content" | "split-content-left" | "split-content-right" | "whatsapp-float" | "custom-code"
   >("hero");
 
   async function loadPages(): Promise<void> {
@@ -28,7 +28,7 @@ export function usePages() {
     pages.value = res.data;
   }
 
-  function createPage(): void {
+  function createPage(isDevMode: boolean = false): void {
     current.value = {
       title: "",
       slug: "",
@@ -42,7 +42,7 @@ export function usePages() {
       schemaCustomJson: "",
       pageStatus: "draft",
       isHomepage: false,
-      blocks: [buildBlock("hero")],
+      blocks: [buildBlock(isDevMode ? "custom-code" : "hero")],
     };
   }
 
@@ -345,15 +345,47 @@ export function usePages() {
     if (type === "whatsapp-float")
       return {
         type: "whatsapp-float",
-        phoneNumber: "6281234567890",
-        message: "Halo, saya ingin bertanya.",
-        label: "WhatsApp",
+        phoneNumber: "628123456789",
+        message: "Halo, saya tertarik dengan layanan SNM Group.",
+        label: "Hubungi Kami",
+        id: Date.now(),
+      };
+    if (type === "custom-code")
+      return {
+        type: "custom-code",
+        code: `<section class="section">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <div class="section-title text-center">
+          <h2 class="wow fadeInUp" data-wow-delay=".2s">Custom Title</h2>
+          <p class="wow fadeInUp" data-wow-delay=".4s">Tulis deskripsi kustom Anda di sini menggunakan struktur HTML yang ada.</p>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <!-- Tambahkan konten kustom Anda di sini -->
+      <div class="col-lg-4 col-md-6 col-12">
+        <div class="single-service">
+          <h4 class="text-title">Feature One</h4>
+          <p>Deskripsi fitur pertama Anda.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>`,
         id: Date.now(),
       };
     return {
-      type: "text",
-      title: "Paragraf",
-      content: "Tulis konten di sini",
+      type: "hero",
+      title: "Judul Hero",
+      subtitle: "Deskripsi hero",
+      content: "",
+      layout: "centered",
+      backgroundImageAssetId: "",
+      imageAssetId: "",
+      ctaText: "",
+      ctaUrl: "",
       id: Date.now(),
     };
   }

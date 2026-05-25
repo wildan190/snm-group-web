@@ -5,10 +5,16 @@
         <h1>Page Management</h1>
         <p class="text-sm text-slate-500">Kelola daftar halaman website</p>
       </div>
-      <router-link to="/cms/pages/new" class="btn btn-primary">
-        <Icon icon="lucide:plus" class="mr-2" />
-        Create New Page
-      </router-link>
+      <div class="flex gap-2">
+        <router-link to="/cms/pages/new" class="btn btn-ghost">
+          <Icon icon="lucide:plus" class="mr-2" />
+          Create New Page
+        </router-link>
+        <router-link to="/cms/pages/new?mode=dev" class="btn btn-primary">
+          <Icon icon="lucide:code-2" class="mr-2" />
+          Create (Dev Mode)
+        </router-link>
+      </div>
     </div>
 
     <div class="page-content">

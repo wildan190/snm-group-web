@@ -857,6 +857,25 @@
                 </div>
               </div>
 
+              <!-- Custom Code Block -->
+              <div v-if="getBlockMode(block) === 'edit' && block.type === 'custom-code'" class="grid gap-5">
+                <div class="form-field">
+                  <label>Custom HTML/CSS Code</label>
+                  <div class="code-editor-wrapper">
+                    <textarea
+                      v-model="block.code"
+                      rows="12"
+                      class="font-mono text-sm bg-slate-900 text-slate-100 p-4 rounded-lg w-full"
+                      placeholder="<section>...</section>"
+                    ></textarea>
+                    <div class="mt-2 text-xs text-slate-500 flex items-center">
+                      <Icon icon="lucide:info" class="mr-1" />
+                      Gunakan struktur section/container yang ada untuk konsistensi desain.
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <!-- WhatsApp Floating Block -->
               <div v-if="getBlockMode(block) === 'edit' && block.type === 'whatsapp-float'" class="grid gap-5">
                 <div class="form-field">
@@ -973,6 +992,7 @@ const blockTypes = [
   { value: "carousel", label: "Carousel", icon: "lucide:layers" },
   { value: "cta-section", label: "CTA Section", icon: "lucide:megaphone" },
   { value: "maps", label: "Maps", icon: "lucide:map-pin" },
+  { value: "custom-code", label: "Custom Code", icon: "lucide:code-2" },
   { value: "split-content-left", label: "Left Align Content", icon: "lucide:panel-left" },
   { value: "split-content-right", label: "Right Align Content", icon: "lucide:panel-right" },
   { value: "whatsapp-float", label: "WhatsApp Floating", icon: "lucide:message-circle" },

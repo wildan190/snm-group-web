@@ -108,6 +108,11 @@ export type PageBlock =
       message?: string;
       label?: string;
       id: number;
+    }
+  | {
+      type: "custom-code";
+      code: string;
+      id: number;
     };
 
 export interface PageData {

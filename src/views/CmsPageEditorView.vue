@@ -128,7 +128,8 @@ const currentProductBlock = ref<Extract<PageBlock, { type: "product" }> | null>(
 async function hydrateEditor() {
   await Promise.all([loadPages(), loadProducts(), loadAssets()]);
   if (isCreateMode.value) {
-    createPage();
+    const isDev = route.query.mode === "dev";
+    createPage(isDev);
     return;
   }
   const target = pages.value.find((p) => String(p._id || "") === pageId.value);
