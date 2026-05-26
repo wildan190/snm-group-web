@@ -41,10 +41,25 @@ const routes = [
       { path: 'navbar', name: 'cms-navbar', component: () => import('@/views/CmsNavbarView.vue'), meta: { auth: true } },
       { path: 'users', name: 'cms-users', component: () => import('@/views/CmsUsersView.vue'), meta: { auth: true } },
       { path: 'assets', name: 'cms-assets', component: () => import('@/views/CmsAssetsView.vue'), meta: { auth: true } },
+      { path: 'blog', name: 'cms-blog', component: () => import('@/views/CmsBlogView.vue'), meta: { auth: true } },
+      { path: 'blog/new', name: 'cms-blog-new', component: () => import('@/views/CmsBlogEditorView.vue'), meta: { auth: true } },
+      { path: 'blog/:id/edit', name: 'cms-blog-edit', component: () => import('@/views/CmsBlogEditorView.vue'), meta: { auth: true } },
       { path: 'ecommerce', name: 'cms-ecommerce', component: () => import('@/views/CmsEcommerceView.vue'), meta: { auth: true } },
       { path: 'ecommerce/audit-logs', name: 'cms-ecommerce-audit-logs', component: () => import('@/views/CmsEcommerceAuditLogsView.vue'), meta: { auth: true } },
     ],
   },
+  // Public Blog Routes
+  {
+    path: '/blog',
+    name: 'blog-list',
+    component: () => import('@/views/BlogListView.vue'),
+  },
+  {
+    path: '/blog/:slug',
+    name: 'blog-detail',
+    component: () => import('@/views/BlogDetailView.vue'),
+  },
+  { path: '/:slug', component: PageView },
   { path: '/:pathMatch(.*)*', redirect: '/' },
 ]
 

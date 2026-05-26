@@ -592,6 +592,74 @@ app.delete("/api/pages/:id", authMiddleware, async (req, res) => {
   res.json({ success: true });
 });
 
+// --- BLOG ENDPOINTS ---
+
+app.get("/api/blog/posts", async (req, res) => {
+  const user = getRequestUserOptional(req);
+  const query = user ? {} : { status: "published" };
+  const posts = await db
+    .collection("blogPosts")
+    .find(query)
+    .sort({ publishedAt: -1, createdAt: -1 })
+    .toArray();
+  res.json(posts);
+});
+
+app.get("/api/blog/posts/:slug", async (req, res) => {
+  const user = getRequestUserOptional(req);
+  const query = user ? { slug: req.params.slug } : { slug: req.params.slug, status: "published" };
+  const post = await db.collection("blogPosts").findOne(query);
+  if (!post) return res.status(404).json({ error: "Artikel tidak ditemukan" });
+  res.json(post);
+});
+
+app.post("/api/blog/posts", authMiddleware, async (req, res) => {
+  const post = {
+    ...req.body,
+    authorId: req.user.id,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    publishedAt: req.body.status === "published" ? new Date() : null,
+  };
+  const inserted = await db.collection("blogPosts").insertOne(post);
+  res.json({ ...post, _id: inserted.insertedId });
+});
+
+app.put("/api/blog/posts/:id", authMiddleware, async (req, res) => {
+  const id = req.params.id;
+  const { _id, ...updateData } = req.body;
+  
+  const existing = await db.collection("blogPosts").findOne({ _id: new ObjectId(id) });
+  if (!existing) return res.status(404).json({ error: "Artikel tidak ditemukan" });
+
+  if (updateData.status === "published" && existing.status !== "published") {
+    updateData.publishedAt = new Date();
+  }
+
+  await db.collection("blogPosts").updateOne(
+    { _id: new ObjectId(id) },
+    { $set: { ...updateData, updatedAt: new Date() } }
+  );
+  res.json({ success: true });
+});
+
+app.delete("/api/blog/posts/:id", authMiddleware, async (req, res) => {
+  const id = req.params.id;
+  await db.collection("blogPosts").deleteOne({ _id: new ObjectId(id) });
+  res.json({ success: true });
+});
+
+app.get("/api/blog/categories", async (req, res) => {
+  const categories = await db.collection("blogCategories").find().toArray();
+  res.json(categories);
+});
+
+app.post("/api/blog/categories", authMiddleware, async (req, res) => {
+  const category = { ...req.body, createdAt: new Date() };
+  const inserted = await db.collection("blogCategories").insertOne(category);
+  res.json({ ...category, _id: inserted.insertedId });
+});
+
 app.get("/api/products", async (req, res) => {
   const products = await db
     .collection("products")

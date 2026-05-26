@@ -33,6 +33,10 @@
             <Icon icon="lucide:file-text" class="item-icon" />
             <span>Halaman</span>
           </router-link>
+          <router-link to="/cms/blog" class="nav-item" @click="closeMenuOnMobile">
+            <Icon icon="lucide:pen-tool" class="item-icon" />
+            <span>Blog Artikel</span>
+          </router-link>
           <router-link to="/cms/products" class="nav-item" @click="closeMenuOnMobile">
             <Icon icon="lucide:shopping-bag" class="item-icon" />
             <span>Produk</span>
