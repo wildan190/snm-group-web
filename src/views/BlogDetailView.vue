@@ -63,10 +63,36 @@ function formatDate(dateString?: string) {
           <div class="row justify-content-center">
             <div class="col-lg-10 col-12">
               <div class="single-inner">
+                <!-- Featured Image -->
+                <div v-if="post.featuredImageAssetId" class="post-thumb mb-10">
+                   <img src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80" alt="Featured" class="w-full rounded-2xl shadow-lg" />
+                </div>
+                
                 <div class="post-details">
                   <div class="detail-inner">
                     <div class="blog-content" v-html="post.content"></div>
                   </div>
+                </div>
+
+                <!-- Footer Meta -->
+                <div class="post-footer mt-10 pt-10 border-t border-slate-100 flex justify-between items-center">
+                  <div class="share-links flex items-center gap-4">
+                    <span class="text-sm font-bold text-slate-400 uppercase tracking-wider">Bagikan:</span>
+                    <div class="flex gap-2">
+                      <a href="#" class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-primary hover:text-white transition-all">
+                        <Icon icon="lucide:facebook" width="18" />
+                      </a>
+                      <a href="#" class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-primary hover:text-white transition-all">
+                        <Icon icon="lucide:twitter" width="18" />
+                      </a>
+                      <a href="#" class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-primary hover:text-white transition-all">
+                        <Icon icon="lucide:linkedin" width="18" />
+                      </a>
+                    </div>
+                  </div>
+                  <router-link to="/blog" class="btn btn-ghost btn-sm">
+                    <Icon icon="lucide:arrow-left" class="mr-2" /> Kembali ke Blog
+                  </router-link>
                 </div>
               </div>
             </div>

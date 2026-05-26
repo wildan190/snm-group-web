@@ -59,9 +59,9 @@ function formatDate(dateString?: string) {
             <div class="single-news wow fadeInUp" data-wow-delay=".2s">
               <div class="image">
                 <router-link :to="'/blog/' + post.slug">
-                  <img v-if="post.featuredImageAssetId" src="https://via.placeholder.com/600x400" alt="Blog" />
+                  <img v-if="post.featuredImageAssetId" src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Blog" />
                   <div v-else class="placeholder-img">
-                    <Icon icon="lucide:file-text" width="48" />
+                    <Icon icon="lucide:image" width="48" />
                   </div>
                 </router-link>
               </div>
@@ -69,16 +69,14 @@ function formatDate(dateString?: string) {
                 <h4 class="title">
                   <router-link :to="'/blog/' + post.slug">{{ post.title }}</router-link>
                 </h4>
-                <p>{{ post.excerpt || 'Klik untuk membaca selengkapnya...' }}</p>
+                <p>{{ post.excerpt || 'Temukan wawasan menarik dan informasi terbaru melalui artikel lengkap kami yang membahas topik ini secara mendalam.' }}</p>
                 <div class="meta-details">
-                  <ul>
-                    <li>
-                      <Icon icon="lucide:calendar" class="mr-1" />
-                      {{ formatDate(post.publishedAt || post.createdAt) }}
-                    </li>
-                  </ul>
+                  <span>
+                    <Icon icon="lucide:calendar" />
+                    {{ formatDate(post.publishedAt || post.createdAt) }}
+                  </span>
                   <router-link :to="'/blog/' + post.slug" class="read-more">
-                    Baca Selengkapnya <Icon icon="lucide:arrow-right" class="ml-1" />
+                    Selengkapnya <Icon icon="lucide:arrow-right" />
                   </router-link>
                 </div>
               </div>
