@@ -369,7 +369,7 @@
           <div class="row">
             <div v-for="(item, i) in block.items" :key="i" :class="block.variant === 'horizontal' ? 'col-lg-6 col-12' : 'col-lg-4 col-md-6 col-12'" class="mb-4">
               <!-- Default Style: Icon Top -->
-              <div v-if="!block.variant || block.variant === 'default'" class="single-service wow fadeInUp" :data-wow-delay="`${0.1 * (i + 1)}s`" style="height: 100%">
+              <div v-if="!block.variant || block.variant === 'default'" class="single-service wow fadeInUp" :data-wow-delay="`${0.1 * (Number(i) + 1)}s`" style="height: 100%">
                 <div class="main-icon" v-if="item.icon">
                   <Icon :icon="item.icon" width="32" />
                 </div>
@@ -383,7 +383,7 @@
               </div>
 
               <!-- Horizontal Style: Icon Left -->
-              <div v-else-if="block.variant === 'horizontal'" class="horizontal-card wow fadeInUp" :data-wow-delay="`${0.1 * (i + 1)}s`">
+              <div v-else-if="block.variant === 'horizontal'" class="horizontal-card wow fadeInUp" :data-wow-delay="`${0.1 * (Number(i) + 1)}s`">
                 <div class="card-icon-wrap">
                   <Icon v-if="item.icon" :icon="item.icon" width="28" />
                 </div>
@@ -397,7 +397,7 @@
               </div>
 
               <!-- Minimal Style: Bordered -->
-              <div v-else-if="block.variant === 'minimal'" class="minimal-card wow fadeInUp" :data-wow-delay="`${0.1 * (i + 1)}s`">
+              <div v-else-if="block.variant === 'minimal'" class="minimal-card wow fadeInUp" :data-wow-delay="`${0.1 * (Number(i) + 1)}s`">
                 <div class="flex items-center gap-3 mb-4">
                   <Icon v-if="item.icon" :icon="item.icon" width="24" class="text-primary" />
                   <h4 class="text-title mb-0">{{ item.title }}</h4>
@@ -421,7 +421,7 @@
           <!-- Default Style: Classic Vertical -->
           <div v-if="!block.variant || block.variant === 'default'" class="row align-items-center justify-content-center">
             <div v-for="(plan, i) in block.plans" :key="i" class="col-lg-4 col-md-6 col-12 mb-4">
-              <div class="single-table wow fadeInUp" :class="{ 'featured': plan.isFeatured }" :data-wow-delay="`${0.1 * (i + 1)}s`">
+              <div class="single-table wow fadeInUp" :class="{ 'featured': plan.isFeatured }" :data-wow-delay="`${0.1 * (Number(i) + 1)}s`">
                 <div class="table-head">
                   <h4 class="title">{{ plan.name }}</h4>
                   <div class="price">
@@ -443,7 +443,7 @@
           <!-- Modern Style: High Shadow & Colors -->
           <div v-else-if="block.variant === 'modern'" class="row justify-content-center">
             <div v-for="(plan, i) in block.plans" :key="i" class="col-lg-4 col-md-6 col-12 mb-4">
-              <div class="modern-pricing wow fadeInUp" :class="{ 'featured': plan.isFeatured }" :data-wow-delay="`${0.1 * (i + 1)}s`">
+              <div class="modern-pricing wow fadeInUp" :class="{ 'featured': plan.isFeatured }" :data-wow-delay="`${0.1 * (Number(i) + 1)}s`">
                 <div class="p-10 text-center" :class="plan.isFeatured ? 'bg-primary text-white' : 'bg-slate-50'">
                   <span v-if="plan.isFeatured" class="bg-white text-primary px-4 py-1 rounded-full text-[11px] font-bold uppercase mb-4 inline-block">Populer</span>
                   <h4 class="text-2xl font-bold mb-3" :class="plan.isFeatured ? 'text-white' : 'text-slate-900'">{{ plan.name }}</h4>
@@ -470,7 +470,7 @@
 
           <!-- Compact Style: Horizontal Rows -->
           <div v-else-if="block.variant === 'compact'" class="max-w-4xl mx-auto space-y-4">
-            <div v-for="(plan, i) in block.plans" :key="i" class="compact-plan wow fadeInUp" :class="{ 'featured': plan.isFeatured }" :data-wow-delay="`${0.1 * (i + 1)}s`">
+            <div v-for="(plan, i) in block.plans" :key="i" class="compact-plan wow fadeInUp" :class="{ 'featured': plan.isFeatured }" :data-wow-delay="`${0.1 * (Number(i) + 1)}s`">
               <div class="flex-1">
                 <div class="flex items-center gap-3 mb-1">
                   <h4 class="text-xl font-bold mb-0">{{ plan.name }}</h4>
@@ -501,7 +501,7 @@
           <!-- Style 1: Grid (Static) -->
           <div v-if="!block.variant || block.variant === 'grid'" class="row justify-content-center align-items-center">
             <div v-for="(client, i) in block.items" :key="i" class="col-lg-3 col-md-4 col-6 mb-6">
-              <div class="client-logo-box wow fadeInUp" :data-wow-delay="`${0.1 * (i + 1)}s`">
+              <div class="client-logo-box wow fadeInUp" :data-wow-delay="`${0.1 * (Number(i) + 1)}s`">
                 <a :href="client.link || '#'" :target="client.link ? '_blank' : '_self'" class="client-link">
                   <img v-if="client.imageAssetId" :src="getAssetUrl(client.imageAssetId)" :alt="client.name" class="client-img" />
                   <div v-else class="client-placeholder">{{ client.name || 'Logo Client' }}</div>
